@@ -7,6 +7,7 @@ xml parser function
 Takes an xml file and returns a list of category and x/y coordinates for each
 kernel.
 """
+import sys
 import numpy as np
 import xml.etree.ElementTree as ET
 import pandas as pd
@@ -115,11 +116,27 @@ def sliding_window(df, w, s):
 	final_x_coord = df["X-Coordinate"].tail(1)
 	int_fxc = int(final_x_coord)
 
+	adj_fxc = int_fxc - 150
+
+	adj_step_fxc = int_fxc * 0.25
+
+	if (int_w >= adj_fxc):
+		sys.exit('Width of window is too large, enter smaller width value.')
+
+	if (int_s >= adj_step_fxc):
+		sys.exit('Step size is too large, enter smaller value.')
+
+
 	while end_x <= int_fxc:
 
 		rslt_df = df[(df['X-Coordinate'] >= int_start_x) & (df['X-Coordinate'] <= end_x)]
 
-		kernel_tot = len(rslt_df.index)
+		kernel_tot = int(len(rslt_df.index))
+
+
+		if (kernel_tot == 0):
+			sys.exit('0 Kernels in Window, please enter larger width value.')
+
 		window_start = int_start_x
 		window_end = end_x
 
@@ -149,7 +166,7 @@ def sliding_window(df, w, s):
 
 coordinates = parse_xml("/Users/elysevischulis/Downloads/X401x492-2m1.xml")
 
-ordered_coord = sliding_window(coordinates, 34, 3)
+ordered_coord = sliding_window(coordinates, 30, 500)
 
 
 def tot_kern_scatter ( kern_count_df ):
@@ -180,4 +197,3 @@ def transmission_scatter ( kern_count_df ):
 
 transmission_scatter(ordered_coord)
 
-# comment
