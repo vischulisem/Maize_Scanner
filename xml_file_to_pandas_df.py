@@ -185,8 +185,9 @@ def transmission_scatter ( kern_count_df ):
 
 	kern_count_df['Percent_Transmission'] = kern_count_df['Total_Fluor']/kern_count_df['Total_Kernels']
 
-	transmission_plot = sns.lineplot(x='window_mean', y='Percent_Transmission', data=kern_count_df, palette='Set1')
+	transmission_plot = sns.scatterplot(x='window_mean', y='Percent_Transmission', data=kern_count_df, palette='Set1')
 	transmission_plot.ticklabel_format(axis='x', useOffset=False)
+	plt.gcf().subplots_adjust(bottom=0.3)
 
 	#set title
 	plt.title('Forward Plot')

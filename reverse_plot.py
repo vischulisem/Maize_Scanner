@@ -10,7 +10,6 @@ import seaborn as sns
 
 
 
-sns.set(rc={'figure.figsize': (9, 2.5)})
 
 
 def parse_xml(input_xml):
@@ -173,6 +172,8 @@ def transmission_scatter ( kern_count_df ):
 
 	kern_count_df['Percent_Transmission'] = kern_count_df['Total_Fluor']/kern_count_df['Total_Kernels']
 	transmission_plot = sns.scatterplot("window_mean", "Percent_Transmission", data=kern_count_df, palette='Set1')
+	sns.set(rc={'figure.figsize': (9, 2.5)})
+	plt.gcf().subplots_adjust(bottom=0.3)
 
 	#set title
 	plt.title('Reverse Plot')

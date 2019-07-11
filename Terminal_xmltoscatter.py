@@ -239,7 +239,8 @@ def transmission_scatter ( kern_count_df, xml ):
 	#creating plot
 	transmission_plot = sns.lineplot(x="window_mean", y="Percent_Transmission", data=kern_count_df)
 
-	#sns.set(rc={'figure.figsize': (10, 5)})
+	sns.set(rc={'figure.figsize': (9, 2.5)})
+	plt.gcf().subplots_adjust(bottom=0.3)
 
 	#set title
 	plt.title(xml[:-4]+' Plot')
