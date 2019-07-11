@@ -196,8 +196,7 @@ def sliding_window(df, w, s):
 		data = [[steps, window_start, window_end, kernel_tot, fluor_tot, nonfluor_tot]]
 
 		#putting list into dataframe (which is just 1 row)
-		data_df = pd.DataFrame(data=data,
-							   columns='Step_Size Window_Start Window_End Total_Kernels Total_Fluor Total_NonFluor'.split())
+		data_df = pd.DataFrame(data=data, columns='Step_Size Window_Start Window_End Total_Kernels Total_Fluor Total_NonFluor'.split())
 
 		#appending data_df to kern_count_df (1 row added each time)
 		kern_count_df = kern_count_df.append(data_df)
