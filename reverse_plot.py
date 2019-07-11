@@ -27,13 +27,6 @@ def parse_xml(input_xml):
 	fluorescent = root[1][1]
 	nonfluorescent = root[1][2]
 
-
-	#print(type(fluorescent))
-	#print(fluorescent)
-
-	#print(type(nonfluorescent))
-	#print(nonfluorescent)
-
 	# Setting up some empty lists to move the coordinates from the xml into
 	fluor_x = []
 	fluor_y = []
@@ -86,12 +79,12 @@ def parse_xml(input_xml):
 	# figure.savefig("coord_plot.png")
 	# my_plot = plt.show()
 
-	return figure
+	#return figure
 
 
 def sliding_window(df, w, s):
 	# # sort x values from small to big
-	df.sort_values(by=['X-Coordinate'], inplace=True)
+	df.sort_values(by=['X-Coordinate'], inplace=True, ascending=False)
 	df = df.reset_index(drop=True)
 
 	# #Choosing starting point for window with value for x
@@ -103,7 +96,7 @@ def sliding_window(df, w, s):
 	int_s = int(s)
 
 	# #Defining end of window
-	end_x = int_start_x + int_w
+	end_x = int_start_x - int_w
 
 	# #Defining steps for window
 	steps = int_s
@@ -115,20 +108,20 @@ def sliding_window(df, w, s):
 	final_x_coord = df["X-Coordinate"].tail(1)
 	int_fxc = int(final_x_coord)
 
-	adj_fxc = int_fxc - 150
+	adj_fxc = int_fxc + 150
 
-	adj_step_fxc = int_fxc * 0.25
+	#adj_step_fxc = int_fxc * 0.25
 
-	if (int_w >= adj_fxc):
-		sys.exit('Width of window is too large, enter smaller width value.')
+	#if (int_w <= adj_fxc):
+		#sys.exit('Width of window is too large, enter smaller width value.')
 
-	if (int_s >= adj_step_fxc):
-		sys.exit('Step size is too large, enter smaller value.')
+	#if (int_s >= adj_step_fxc):
+		#sys.exit('Step size is too large, enter smaller value.')
 
 
-	while end_x <= int_fxc:
+	while end_x >= int_fxc:
 
-		rslt_df = df[(df['X-Coordinate'] >= int_start_x) & (df['X-Coordinate'] <= end_x)]
+		rslt_df = df[(df['X-Coordinate'] <= int_start_x) & (df['X-Coordinate'] >= end_x)]
 
 		kernel_tot = int(len(rslt_df.index))
 
@@ -152,20 +145,15 @@ def sliding_window(df, w, s):
 			nonfluor_tot = 0
 
 		data = [[steps, window_start, window_end, kernel_tot, fluor_tot, nonfluor_tot]]
-		data_df = pd.DataFrame(data=data,
-							   columns='Step_Size Window_Start Window_End Total_Kernels Total_Fluor Total_NonFluor'.split())
+		data_df = pd.DataFrame(data=data, columns='Step_Size Window_Start Window_End Total_Kernels Total_Fluor Total_NonFluor'.split())
 		kern_count_df = kern_count_df.append(data_df)
 
-		int_start_x = int_start_x + steps
-		end_x = end_x + steps
+		int_start_x = int_start_x - steps
+		end_x = end_x - steps
 
 	kern_count_df = kern_count_df.reset_index(drop=True)
 
 	return kern_count_df
-
-coordinates = parse_xml("/Users/elysevischulis/Downloads/X401x492-2m1.xml")
-
-ordered_coord = sliding_window(coordinates, 400, 2)
 
 
 #def tot_kern_scatter ( kern_count_df ):
@@ -184,26 +172,25 @@ def transmission_scatter ( kern_count_df ):
 	kern_count_df['window_mean'] = col.mean(axis=1)
 
 	kern_count_df['Percent_Transmission'] = kern_count_df['Total_Fluor']/kern_count_df['Total_Kernels']
-
-	transmission_plot = sns.lineplot(x='window_mean', y='Percent_Transmission', data=kern_count_df, palette='Set1')
-	transmission_plot.ticklabel_format(axis='x', useOffset=False)
+	transmission_plot = sns.scatterplot("window_mean", "Percent_Transmission", data=kern_count_df, palette='Set1')
 
 	#set title
-	plt.title('Forward Plot')
+	plt.title('Reverse Plot')
 	# Set x-axis label
 	plt.xlabel('Window Position (pixels)')
 	# Set y-axis label
 	plt.ylabel('Percent Transmission')
 
 	transmission_figure = transmission_plot.get_figure()
-	transmission_figure.savefig("transmission_figure.png")
+	transmission_figure.savefig("reverse_transmission_figure.png")
 	my_plot = plt.show()
 
 	return transmission_figure
 
 
+coordinates = parse_xml("/Users/elysevischulis/Downloads/X401x492-2m1.xml")
 
+ordered_coord = sliding_window(coordinates, 50, 100)
 
 transmission_scatter(ordered_coord)
-
 
