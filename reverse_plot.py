@@ -151,6 +151,7 @@ def sliding_window(df, w, s):
 		end_x = end_x - steps
 
 	kern_count_df = kern_count_df.reset_index(drop=True)
+	kern_count_df = kern_count_df.apply(pd.to_numeric)
 
 	return kern_count_df
 

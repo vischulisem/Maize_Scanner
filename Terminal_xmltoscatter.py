@@ -44,30 +44,6 @@ def parse_xml(input_xml):
 	fluorescent = root[1][1]
 	nonfluorescent = root[1][2]
 
-	# Assigning types other than fluorescent and nonfluor in order to
-	# # exit program if list is present
-	root_4 = root[1][4]
-	root_5 = root[1][5]
-	root_6 = root[1][6]
-	root_7 = root[1][7]
-	root_8 = root[1][8]
-
-	if not list(root_4):
-		sys.exit(f'Processing {input_xml} stopped...contains unknown type 4.')
-
-	if not list(root_5):
-		sys.exit(f'Processing {input_xml} stopped...contains unknown type 5.')
-
-	if not list(root_6):
-		sys.exit(f'Processing {input_xml} stopped...contains unknown type 6.')
-
-	if not list(root_7):
-		sys.exit(f'Processing {input_xml} stopped...contains unknown type 7.')
-
-	if not list(root_8):
-		sys.exit(f'Processing {input_xml} stopped...contains unknown type 8.')
-
-
 	# Setting up some empty lists to move the coordinates from the xml into
 	fluor_x = []
 	fluor_y = []
@@ -196,7 +172,8 @@ def sliding_window(df, w, s):
 		data = [[steps, window_start, window_end, kernel_tot, fluor_tot, nonfluor_tot]]
 
 		#putting list into dataframe (which is just 1 row)
-		data_df = pd.DataFrame(data=data, columns='Step_Size Window_Start Window_End Total_Kernels Total_Fluor Total_NonFluor'.split())
+		data_df = pd.DataFrame(data=data,
+							   columns='Step_Size Window_Start Window_End Total_Kernels Total_Fluor Total_NonFluor'.split())
 
 		#appending data_df to kern_count_df (1 row added each time)
 		kern_count_df = kern_count_df.append(data_df)
@@ -207,6 +184,7 @@ def sliding_window(df, w, s):
 
 	#resetting index
 	kern_count_df = kern_count_df.reset_index(drop=True)
+	kern_count_df = kern_count_df.apply(pd.to_numeric)
 
 	return kern_count_df
 
@@ -233,12 +211,8 @@ def transmission_scatter ( kern_count_df, xml ):
 	#calculating percent transmission
 	kern_count_df['Percent_Transmission'] = kern_count_df['Total_Fluor']/kern_count_df['Total_Kernels']
 
-	kern_count_df.window_mean.astype(float)
-	kern_count_df.Percent_Transmission.astype(float)
-
 	#creating plot
-	transmission_plot = sns.lineplot(x="window_mean", y="Percent_Transmission", data=kern_count_df)
-
+	transmission_plot = sns.scatterplot(x="window_mean", y="Percent_Transmission", data=kern_count_df)
 	sns.set(rc={'figure.figsize': (9, 2.5)})
 	plt.gcf().subplots_adjust(bottom=0.3)
 
@@ -254,7 +228,7 @@ def transmission_scatter ( kern_count_df, xml ):
 	#create directory to save plots
 	script_dir = os.path.dirname(__file__)
 	results_dir = os.path.join(script_dir, 'Transmission_plots/')
-	#sample_file_name = 'test.png'
+	#sample_file_name
 	sample_file_name = xml[:-4]+'.png'
 
 	if not os.path.isdir(results_dir):
@@ -266,11 +240,53 @@ def transmission_scatter ( kern_count_df, xml ):
 	return transmission_figure
 
 
+def check_xml_error( input_xml ):
+	# Make element tree for object
+	tree = ET.parse(input_xml)
+
+	# Getting the root of the tree
+	root = tree.getroot()
+
+	# Pulling out the name of the image
+	image_name_string = (root[0][0].text)
+
+	# Assigning types other than fluorescent and nonfluor in order to
+	# # exit program if list is present
+	root_4 = root[1][4]
+	root_5 = root[1][5]
+	root_6 = root[1][6]
+	root_7 = root[1][7]
+	root_8 = root[1][8]
+
+	count_4 = len(list(root_4))
+	count_5 = len(list(root_5))
+	count_6 = len(list(root_6))
+	count_7 = len(list(root_7))
+	count_8 = len(list(root_8))
+
+	# #checking if anything exists in other types
+	if (count_4 > 1) or (count_5 > 1) or (count_6> 1) or (count_7 > 1) or (count_8 > 1):
+		print(f'ERROR: {image_name_string} skipped...contains unknown type.')
+		result = 'True'
+	else:
+		result ='False'
+
+
+
+	return result
+
+
+
 #Main function for running the whole script with argparse
 # # if - allows you to input xml file as first argument
 # # # else - allows you to input directory of xml files as argument
 def main():
 	if args.xml.endswith(".xml"):
+		# result = check_xml_error(args.xml)
+		# if result == 'True':
+		# 	continue
+		# check xml error fun
+		print(f'Processing {args.xml}...')
 		dataframe = parse_xml(args.xml)
 		dataframe2 = sliding_window(dataframe, args.width, args.step_size)
 		final_plot = transmission_scatter(dataframe2, args.xml)
@@ -278,9 +294,12 @@ def main():
 		for roots, dirs, files in os.walk(args.xml):
 			for filename in files:
 				fullpath = os.path.join(args.xml, filename)
-				print(f'Processing {fullpath}')
+				print(f'Processing {fullpath}...')
 				if fullpath.endswith(".xml"):
 					with open(fullpath, 'r') as f:
+						result = check_xml_error(f)
+						if result == 'True':
+							continue
 						dataframe = parse_xml(f)
 						dataframe2 = sliding_window(dataframe, args.width, args.step_size)
 						final_plot = transmission_scatter(dataframe2, filename)

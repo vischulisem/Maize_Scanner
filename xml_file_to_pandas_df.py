@@ -160,12 +160,13 @@ def sliding_window(df, w, s):
 		end_x = end_x + steps
 
 	kern_count_df = kern_count_df.reset_index(drop=True)
+	kern_count_df = kern_count_df.apply(pd.to_numeric)
 
 	return kern_count_df
 
-coordinates = parse_xml("/Users/elysevischulis/Downloads/X401x492-2m1.xml")
+# coordinates = parse_xml("/Users/elysevischulis/Downloads/X401x492-2m1.xml")
 
-ordered_coord = sliding_window(coordinates, 400, 2)
+#ordered_coord = sliding_window(coordinates, 400, 2)
 
 
 #def tot_kern_scatter ( kern_count_df ):
@@ -185,7 +186,7 @@ def transmission_scatter ( kern_count_df ):
 
 	kern_count_df['Percent_Transmission'] = kern_count_df['Total_Fluor']/kern_count_df['Total_Kernels']
 
-	transmission_plot = sns.scatterplot(x='window_mean', y='Percent_Transmission', data=kern_count_df, palette='Set1')
+	transmission_plot = sns.lineplot(x='window_mean', y='Percent_Transmission', data=kern_count_df, palette='Set1')
 	transmission_plot.ticklabel_format(axis='x', useOffset=False)
 	plt.gcf().subplots_adjust(bottom=0.3)
 
@@ -203,8 +204,47 @@ def transmission_scatter ( kern_count_df ):
 	return transmission_figure
 
 
+def check_xml_error( input_xml ):
+	# Make element tree for object
+	tree = ET.parse(input_xml)
+
+	# Getting the root of the tree
+	root = tree.getroot()
+
+	# Pulling out the name of the image
+	image_name_string = (root[0][0].text)
+
+	# Assigning types other than fluorescent and nonfluor in order to
+	# # exit program if list is present
+	root_4 = root[1][4]
+	root_5 = root[1][5]
+	root_6 = root[1][6]
+	root_7 = root[1][7]
+	root_8 = root[1][8]
+
+	count_4 = len(list(root_4))
+	count_5 = len(list(root_5))
+	count_6 = len(list(root_6))
+	count_7 = len(list(root_7))
+	count_8 = len(list(root_8))
+
+	# #checking if anything exists in other types
+	if (count_4 > 1) or (count_5 > 1) or (count_6> 1) or (count_7 > 1) or (count_8 > 1):
+		print(f'ERROR: {image_name_string} skipped...contains unknown type.')
+		result = 'True'
+	else:
+		print(f'Normal File')
+		result ='False'
 
 
-transmission_scatter(ordered_coord)
+
+	return result
+
+coordinates = check_xml_error("/Users/elysevischulis/Downloads/X4-2x484-4m4_just_4.xml")
+
+#coordinates = check_xml_error("/Users/elysevischulis/Downloads/X401x492-2m1.xml")
+
+
+#transmission_scatter(ordered_coord)
 
 
