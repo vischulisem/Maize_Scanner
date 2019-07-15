@@ -17,8 +17,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-#sets parameters for seaborn plots
-sns.set_style("darkgrid")
+
 
 
 #setting up argparse arguments
@@ -29,10 +28,70 @@ parser.add_argument('step_size', metavar='', help='Steps in pixels for window mo
 args = parser.parse_args()
 
 
-
-def parse_xml(input_xml):
+def check_xml_error( input_xml ):
 	# Make element tree for object
 	tree = ET.parse(input_xml)
+
+	# Getting the root of the tree
+	root = tree.getroot()
+
+	# Pulling out the name of the image
+	image_name_string = (root[0][0].text)
+
+	# Assigning types other than fluorescent and nonfluor in order to
+	# # exit program if list is present
+	try:
+		root_4 = root[1][4]
+		count_4 = len(list(root_4))
+	except IndexError:
+		print('No root 4 in this file')
+		count_4 = 0
+
+	try:
+		root_5 = root[1][5]
+		count_5 = len(list(root_5))
+	except IndexError:
+		print('No root 5 in this file')
+		count_5 = 0
+
+	try:
+		root_6 = root[1][6]
+		count_6 = len(list(root_6))
+	except IndexError:
+		print('No root 6 in this file')
+		count_6 = 0
+
+
+	try:
+		root_7 = root[1][7]
+		count_7 = len(list(root_7))
+	except IndexError:
+		print('No root 7 in this file')
+		count_7 = 0
+
+
+	try:
+		root_8 = root[1][8]
+		count_8 = len(list(root_8))
+	except IndexError:
+		print('No root 8 in this file')
+		count_8 = 0
+
+
+	# #checking if anything exists in other types
+	if (count_4 > 1) or (count_5 > 1) or (count_6> 1) or (count_7 > 1) or (count_8 > 1):
+		print(f'ERROR: {image_name_string} skipped...contains unknown type.')
+		result = 'True'
+	else:
+		result = 'False'
+
+	return result, tree
+
+
+
+def parse_xml(input_xml, tree):
+	# Make element tree for object
+	#tree = ET.parse(input_xml)
 
 	# Getting the root of the tree
 	root = tree.getroot()
@@ -79,6 +138,7 @@ def parse_xml(input_xml):
 	df['X-Coordinate'] = df['X-Coordinate'].astype(np.int64)
 	df['Y-Coordinate'] = df['Y-Coordinate'].astype(np.int64)
 
+
 	return df
 
 
@@ -99,7 +159,7 @@ def parse_xml(input_xml):
 	#return figure
 
 
-def sliding_window(df, w, s):
+def sliding_window(df, w, s, filename):
 	# # sort x values from small to big
 	df.sort_values(by=['X-Coordinate'], inplace=True)
 	df = df.reset_index(drop=True)
@@ -132,10 +192,16 @@ def sliding_window(df, w, s):
 	adj_step_fxc = int_fxc * 0.25
 
 	if (int_w >= adj_fxc):
-		sys.exit('Width of window is too large, enter smaller width value.')
+		print(f'For {filename} - Width of window is too large, enter smaller width value.')
+		ans1 = 'True'
+	else:
+		ans1 = 'False'
 
 	if (int_s >= adj_step_fxc):
-		sys.exit('Step size is too large, enter smaller value.')
+		print(f'For {filename} - Step size is too large, enter smaller value.')
+		ans2 = 'True'
+	else:
+		ans2 = 'False'
 
 	# # Beginning of sliding window to scan ear and output new dataframe called kern_count_df
 	while end_x <= int_fxc:
@@ -148,8 +214,11 @@ def sliding_window(df, w, s):
 
 		#Error message if there are no kernels in window
 		if (kernel_tot == 0):
-			sys.exit('0 Kernels in Window, please enter larger width value.')
-
+			print(f'For {filename} - 0 Kernels in Window, please enter larger width value.')
+			ans3 = 'True'
+			break
+		else:
+			ans3 = 'False'
 
 		# Listing start and end pixels for window
 		window_start = int_start_x
@@ -186,7 +255,7 @@ def sliding_window(df, w, s):
 	kern_count_df = kern_count_df.reset_index(drop=True)
 	kern_count_df = kern_count_df.apply(pd.to_numeric)
 
-	return kern_count_df
+	return kern_count_df, ans1, ans2, ans3
 
 #function for plotting total kernels vs average window position
 #def tot_kern_scatter ( kern_count_df ):
@@ -204,6 +273,9 @@ def sliding_window(df, w, s):
 # # plots are saved by file name.png and put into new directory called
 # # # transmission_plots
 def transmission_scatter ( kern_count_df, xml ):
+	# sets parameters for seaborn plots
+	sns.set_style("white")
+
 	#calculating average window position
 	col = kern_count_df.loc[:, "Window_Start":"Window_End"]
 	kern_count_df['window_mean'] = col.mean(axis=1)
@@ -212,16 +284,25 @@ def transmission_scatter ( kern_count_df, xml ):
 	kern_count_df['Percent_Transmission'] = kern_count_df['Total_Fluor']/kern_count_df['Total_Kernels']
 
 	#creating plot
-	transmission_plot = sns.lineplot(x="window_mean", y="Percent_Transmission", data=kern_count_df)
-	sns.set(rc={'figure.figsize': (9, 2.5)})
-	plt.gcf().subplots_adjust(bottom=0.3)
+	transmission_plot = sns.lineplot(x="window_mean", y="Percent_Transmission", data=kern_count_df, linewidth=5)
+	sns.set(rc={'figure.figsize':(11.7,8.27)})
+	# plt.gcf().subplots_adjust(bottom=0.3)
+	plt.ylim(0, 1)
+	transmission_plot.yaxis.grid(True)
 
-	#set title
-	plt.title(xml[:-4]+' Plot')
-	# Set x-axis label
-	plt.xlabel('Window Position (pixels)')
-	# Set y-axis label
-	plt.ylabel('Percent Transmission')
+
+	plt.title(xml[:-4]+' Plot', fontsize=30, weight='bold', loc='center', verticalalignment='baseline')
+	plt.xlabel('Window Position (pixels)', fontsize=18, weight='bold')
+	plt.ylabel('Percent Transmission', fontsize=18, weight='bold')
+
+	plt.rcParams["font.weight"] = "bold"
+	plt.rcParams["axes.labelweight"] = "bold"
+
+
+
+
+
+
 
 	transmission_figure = transmission_plot.get_figure()
 
@@ -234,47 +315,10 @@ def transmission_scatter ( kern_count_df, xml ):
 	if not os.path.isdir(results_dir):
 		os.makedirs(results_dir)
 
-	transmission_figure.savefig(results_dir + sample_file_name)
+	transmission_figure.savefig(results_dir + sample_file_name, bbox_inches="tight")
 	plt.close()
 
 	return transmission_figure
-
-
-def check_xml_error( input_xml ):
-	# Make element tree for object
-	tree = ET.parse(input_xml)
-
-	# Getting the root of the tree
-	root = tree.getroot()
-
-	# Pulling out the name of the image
-	image_name_string = (root[0][0].text)
-
-	# Assigning types other than fluorescent and nonfluor in order to
-	# # exit program if list is present
-	root_4 = root[1][4]
-	root_5 = root[1][5]
-	root_6 = root[1][6]
-	root_7 = root[1][7]
-	root_8 = root[1][8]
-
-	count_4 = len(list(root_4))
-	count_5 = len(list(root_5))
-	count_6 = len(list(root_6))
-	count_7 = len(list(root_7))
-	count_8 = len(list(root_8))
-
-	# #checking if anything exists in other types
-	if (count_4 > 1) or (count_5 > 1) or (count_6> 1) or (count_7 > 1) or (count_8 > 1):
-		print(f'ERROR: {image_name_string} skipped...contains unknown type.')
-		result = 'True'
-	else:
-		result = 'False'
-
-
-
-	return result
-
 
 
 #Main function for running the whole script with argparse
@@ -282,13 +326,15 @@ def check_xml_error( input_xml ):
 # # # else - allows you to input directory of xml files as argument
 def main():
 	if args.xml.endswith(".xml"):
-		result = check_xml_error(args.xml)
-		#if result == 'True':
-		print(result)
+		result, tree = check_xml_error(args.xml)
+		if result == 'True':
+			sys.exit('Program Exit')
 		# check xml error fun
 		print(f'Processing {args.xml}...')
-		dataframe = parse_xml(args.xml)
-		dataframe2 = sliding_window(dataframe, args.width, args.step_size)
+		dataframe = parse_xml(args.xml, tree)
+		dataframe2, ans1, ans2, ans3 = sliding_window(dataframe, args.width, args.step_size)
+		if (ans1 == 'True') or (ans2 == 'True') or (ans3 == 'True'):
+			sys.exit('Program Exit')
 		final_plot = transmission_scatter(dataframe2, args.xml)
 	else:
 		for roots, dirs, files in os.walk(args.xml):
@@ -297,12 +343,13 @@ def main():
 				print(f'Processing {fullpath}...')
 				if fullpath.endswith(".xml"):
 					with open(fullpath, 'r') as f:
-						result = check_xml_error(f)
+						result, tree = check_xml_error(f)
 						if result == 'True':
-							print(result)
 							continue
-						dataframe = parse_xml(f)
-						dataframe2 = sliding_window(dataframe, args.width, args.step_size)
+						dataframe = parse_xml(f, tree)
+						dataframe2, ans1, ans2, ans3 = sliding_window(dataframe, args.width, args.step_size, filename)
+						if (ans1 == 'True') or (ans2 == 'True') or (ans3 == 'True'):
+							continue
 						final_plot = transmission_scatter(dataframe2, filename)
 
 	print('Process Complete!')
