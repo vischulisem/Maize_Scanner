@@ -212,7 +212,7 @@ def transmission_scatter ( kern_count_df, xml ):
 	kern_count_df['Percent_Transmission'] = kern_count_df['Total_Fluor']/kern_count_df['Total_Kernels']
 
 	#creating plot
-	transmission_plot = sns.scatterplot(x="window_mean", y="Percent_Transmission", data=kern_count_df)
+	transmission_plot = sns.lineplot(x="window_mean", y="Percent_Transmission", data=kern_count_df)
 	sns.set(rc={'figure.figsize': (9, 2.5)})
 	plt.gcf().subplots_adjust(bottom=0.3)
 
@@ -269,7 +269,7 @@ def check_xml_error( input_xml ):
 		print(f'ERROR: {image_name_string} skipped...contains unknown type.')
 		result = 'True'
 	else:
-		result ='False'
+		result = 'False'
 
 
 
@@ -282,9 +282,9 @@ def check_xml_error( input_xml ):
 # # # else - allows you to input directory of xml files as argument
 def main():
 	if args.xml.endswith(".xml"):
-		# result = check_xml_error(args.xml)
-		# if result == 'True':
-		# 	continue
+		result = check_xml_error(args.xml)
+		#if result == 'True':
+		print(result)
 		# check xml error fun
 		print(f'Processing {args.xml}...')
 		dataframe = parse_xml(args.xml)
@@ -299,6 +299,7 @@ def main():
 					with open(fullpath, 'r') as f:
 						result = check_xml_error(f)
 						if result == 'True':
+							print(result)
 							continue
 						dataframe = parse_xml(f)
 						dataframe2 = sliding_window(dataframe, args.width, args.step_size)
