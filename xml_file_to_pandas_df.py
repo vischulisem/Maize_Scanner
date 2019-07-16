@@ -250,8 +250,8 @@ def chisquare_test ( kern_count_df ):
 	nonfluor = single_row['Total_NonFluor'].values[0]
 
 
-	chi1 = stats.chisquare(fluor, expected)
-	chi2 = stats.chisquare(nonfluor, expected)
+	chi1 = stats.mstats.chisquare(f_obs=[fluor], f_exp=[expected], ddof=1)
+	chi2 = stats.mstats.chisquare(f_obs=[nonfluor], f_exp=[expected], ddof=1)
 	print(chi1)
 	print(chi2)
 
