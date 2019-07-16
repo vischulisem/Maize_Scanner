@@ -187,11 +187,9 @@ def sliding_window(df, w, s, filename):
 	int_fxc = int(final_x_coord)
 
 	# # Creating error messages for too small or too big input width or steps
-	adj_fxc = int_fxc - 150
-
 	adj_step_fxc = int_fxc * 0.25
 
-	if (int_w >= adj_fxc):
+	if (end_x >= int_fxc):
 		print(f'For {filename} - Width of window is too large, enter smaller width value.')
 		ans1 = 'True'
 	else:
@@ -212,8 +210,9 @@ def sliding_window(df, w, s, filename):
 		#Total kernels in window
 		kernel_tot = len(rslt_df.index)
 
+
 		#Error message if there are no kernels in window
-		if (kernel_tot == 0):
+		if kernel_tot == 0:
 			print(f'For {filename} - 0 Kernels in Window, please enter larger width value.')
 			ans3 = 'True'
 			break
@@ -254,6 +253,8 @@ def sliding_window(df, w, s, filename):
 	#resetting index
 	kern_count_df = kern_count_df.reset_index(drop=True)
 	kern_count_df = kern_count_df.apply(pd.to_numeric)
+
+	ans3 = 'Neither'
 
 	return kern_count_df, ans1, ans2, ans3
 
@@ -298,12 +299,6 @@ def transmission_scatter ( kern_count_df, xml ):
 	plt.rcParams["font.weight"] = "bold"
 	plt.rcParams["axes.labelweight"] = "bold"
 
-
-
-
-
-
-
 	transmission_figure = transmission_plot.get_figure()
 
 	#create directory to save plots
@@ -332,7 +327,7 @@ def main():
 		# check xml error fun
 		print(f'Processing {args.xml}...')
 		dataframe = parse_xml(args.xml, tree)
-		dataframe2, ans1, ans2, ans3 = sliding_window(dataframe, args.width, args.step_size)
+		dataframe2, ans1, ans2, ans3 = sliding_window(dataframe, args.width, args.step_size, args.xml)
 		if (ans1 == 'True') or (ans2 == 'True') or (ans3 == 'True'):
 			sys.exit('Program Exit')
 		final_plot = transmission_scatter(dataframe2, args.xml)

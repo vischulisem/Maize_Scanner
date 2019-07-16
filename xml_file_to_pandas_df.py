@@ -164,10 +164,6 @@ def sliding_window(df, w, s):
 
 	return kern_count_df
 
-coordinates = parse_xml("/Users/elysevischulis/Downloads/X401x492-2m1.xml")
-
-ordered_coord = sliding_window(coordinates, 400, 2)
-
 
 #def tot_kern_scatter ( kern_count_df ):
 	#col = kern_count_df.loc[: , "Window_Start":"Window_End"]
@@ -240,11 +236,16 @@ def check_xml_error( input_xml ):
 
 	return result
 
+
+coordinates = parse_xml("/Users/elysevischulis/Downloads/X401x492-2m1.xml")
+
+ordered_coord = sliding_window(coordinates, 400, 2)
+
 #coordinates = check_xml_error("/Users/elysevischulis/Downloads/X4-2x484-4m4_just_4.xml")
 
 #coordinates = check_xml_error("/Users/elysevischulis/Downloads/X401x492-2m1.xml")
 
 
-transmission_scatter(ordered_coord)
+#transmission_scatter(ordered_coord)
 
 
