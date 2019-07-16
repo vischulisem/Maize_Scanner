@@ -3,12 +3,13 @@ import sys
 import numpy as np
 import xml.etree.ElementTree as ET
 import pandas as pd
+from pandas import Series, DataFrame
+
 import matplotlib.pyplot as plt
 
 import seaborn as sns
 
-
-
+from scipy import stats
 
 sns.set(rc={'figure.figsize': (9, 2.5)})
 
@@ -237,10 +238,33 @@ def check_xml_error( input_xml ):
 	return result
 
 
+def chisquare_test ( kern_count_df ):
+	index = 0
+
+
+	single_row = kern_count_df.iloc[[index]]
+	single_row = single_row.loc[:, 'Total_Kernels':'Total_NonFluor']
+
+	expected = single_row['Total_Kernels'].values[0] * 0.5
+	fluor = single_row['Total_Fluor'].values[0]
+	nonfluor = single_row['Total_NonFluor'].values[0]
+
+
+	chi1 = stats.chisquare(fluor, expected)
+	chi2 = stats.chisquare(nonfluor, expected)
+	print(chi1)
+	print(chi2)
+
+
+
+	return single_row
+
+
 coordinates = parse_xml("/Users/elysevischulis/Downloads/X401x492-2m1.xml")
 
 ordered_coord = sliding_window(coordinates, 400, 2)
 
+chi = chisquare_test(ordered_coord)
 #coordinates = check_xml_error("/Users/elysevischulis/Downloads/X4-2x484-4m4_just_4.xml")
 
 #coordinates = check_xml_error("/Users/elysevischulis/Downloads/X401x492-2m1.xml")
