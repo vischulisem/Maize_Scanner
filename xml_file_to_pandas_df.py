@@ -11,6 +11,7 @@ import seaborn as sns
 
 from scipy import stats
 
+
 sns.set(rc={'figure.figsize': (9, 2.5)})
 
 
@@ -239,25 +240,57 @@ def check_xml_error( input_xml ):
 
 
 def chisquare_test ( kern_count_df ):
+
 	index = 0
+	end_index = kern_count_df.index[-1]
+	temp_df = pd.DataFrame(columns='P-Value Comparison'.split())
 
+	while index <= end_index:
 
-	single_row = kern_count_df.iloc[[index]]
-	single_row = single_row.loc[:, 'Total_Kernels':'Total_NonFluor']
+		single_row = kern_count_df.iloc[[index]]
+		single_row = single_row.loc[:, 'Total_Kernels':'Total_NonFluor']
 
-	expected = single_row['Total_Kernels'].values[0] * 0.5
-	fluor = single_row['Total_Fluor'].values[0]
-	nonfluor = single_row['Total_NonFluor'].values[0]
+		expected = single_row['Total_Kernels'].values[0] * 0.5
+		fluor = single_row['Total_Fluor'].values[0]
+		nonfluor = single_row['Total_NonFluor'].values[0]
 
+		chi_stat = stats.chisquare([fluor, nonfluor], [expected, expected])
+		pval = chi_stat[1]
 
-	chi1 = stats.mstats.chisquare(f_obs=[fluor], f_exp=[expected], ddof=1)
-	chi2 = stats.mstats.chisquare(f_obs=[nonfluor], f_exp=[expected], ddof=1)
-	print(chi1)
-	print(chi2)
+		if pval <= 0.05:
+			p_input = '< p = 0.05'
+		else:
+			p_input = '> p = 0.05'
 
+		data = [[pval, p_input]]
+		data_df = pd.DataFrame(data=data, columns='P-Value Comparison'.split())
+		temp_df = temp_df.append(data_df)
 
+		index = index + 1
+	temp_df = temp_df.reset_index(drop=True)
+	final_df = pd.concat([kern_count_df, temp_df], axis=1, sort=False)
+	final_df = final_df.reset_index(drop=True)
 
-	return single_row
+	col = final_df.loc[:, "Window_Start":"Window_End"]
+	final_df['window_mean'] = col.mean(axis=1)
+
+	final_df['Percent_Transmission'] = final_df['Total_Fluor'] / final_df['Total_Kernels']
+
+	transmission_plot = sns.scatterplot(x='window_mean', y='Percent_Transmission', data=final_df, hue='Comparison', palette='Set1')
+	transmission_plot.ticklabel_format(axis='x', useOffset=False)
+	plt.gcf().subplots_adjust(bottom=0.3)
+
+	# set title
+	plt.title('Forward Plot')
+	# Set x-axis label
+	plt.xlabel('Window Position (pixels)')
+	# Set y-axis label
+	plt.ylabel('Percent Transmission')
+
+	transmission_figure = transmission_plot.get_figure()
+	transmission_figure.savefig("pvalue_figure.png")
+	my_plot = plt.show()
+	return my_plot
 
 
 coordinates = parse_xml("/Users/elysevischulis/Downloads/X401x492-2m1.xml")
