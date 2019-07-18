@@ -6,11 +6,16 @@ import pandas as pd
 from pandas import Series, DataFrame
 
 import matplotlib.pyplot as plt
-
+import matplotlib.patches as mpatches
+from matplotlib.collections import LineCollection
+from matplotlib.colors import ListedColormap, BoundaryNorm
 import seaborn as sns
-
+from pylab import rcParams
 from scipy import stats
-
+import pylab as pl
+from matplotlib import collections  as mc
+import statsmodels.api as sm
+from statsmodels.graphics.regressionplots import abline_plot
 
 sns.set(rc={'figure.figsize': (9, 2.5)})
 
@@ -271,26 +276,123 @@ def chisquare_test ( kern_count_df ):
 	final_df = pd.concat([kern_count_df, temp_df], axis=1, sort=False)
 	final_df = final_df.reset_index(drop=True)
 
+	return final_df
+
+def pval_plot( final_df ):
+
 	col = final_df.loc[:, "Window_Start":"Window_End"]
 	final_df['window_mean'] = col.mean(axis=1)
 
 	final_df['Percent_Transmission'] = final_df['Total_Fluor'] / final_df['Total_Kernels']
+	end_index = final_df.index[-1]
 
-	transmission_plot = sns.scatterplot(x='window_mean', y='Percent_Transmission', data=final_df, hue='Comparison', palette='Set1')
-	transmission_plot.ticklabel_format(axis='x', useOffset=False)
-	plt.gcf().subplots_adjust(bottom=0.3)
+	reg_x = final_df['window_mean'].values
+	reg_y = final_df['Percent_Transmission'].values
+	slope, intercept, r_value, p_value, std_err = stats.linregress(reg_x, reg_y)
 
-	# set title
-	plt.title('Forward Plot')
-	# Set x-axis label
-	plt.xlabel('Window Position (pixels)')
-	# Set y-axis label
-	plt.ylabel('Percent Transmission')
 
-	transmission_figure = transmission_plot.get_figure()
-	transmission_figure.savefig("pvalue_figure.png")
-	my_plot = plt.show()
-	return my_plot
+	segments = []
+	colors = np.zeros(shape=(end_index, 4))
+	x = final_df['window_mean'].values
+	y = final_df['Percent_Transmission'].values
+	z = final_df['P-Value'].values
+	i = 0
+
+	for x1, x2, y1, y2, z1, z2 in zip(x, x[1:], y, y[1:], z, z[1:]):
+		if z1 > 0.05:
+			colors[i] = tuple([1, 0, 0, 1])
+		elif z1 <= 0.05:
+			colors[i] = tuple([0, 0, 1, 1])
+		else:
+			colors[i] = tuple([0, 1, 0, 1])
+		segments.append([(x1, y1), (x2, y2)])
+		i += 1
+
+
+	lc = mc.LineCollection(segments, colors=colors, linewidths=2)
+	fig, ax = pl.subplots(figsize=(11.7,8.27))
+	ax.add_collection(lc)
+	ax.autoscale()
+	ax.margins(0.1)
+	plt.plot(reg_x, intercept + slope * reg_x, 'r', label='fitted line')
+
+	ax.set_xlim(np.min(x)-50, np.max(x)+50)
+	ax.set_ylim(0, 1)
+	plt.yticks(np.arange(0, 1, step=0.25))
+	plt.figure(figsize=(11.7, 8.27))
+
+
+	ax.set_title('Plot', fontsize=30, fontweight='bold')
+	ax.set_xlabel('Window Position (pixels)', fontsize=20, fontweight='bold')
+	ax.set_ylabel('% GFP', fontsize=20, fontweight='bold')
+
+	ax.set_facecolor('white')
+	ax.yaxis.grid(color='grey')
+
+	ax.spines['bottom'].set_color('black')
+	ax.spines['top'].set_color('black')
+	ax.spines['right'].set_color('black')
+	ax.spines['left'].set_color('black')
+
+	red_patch = mpatches.Patch(color='red', label='> p = 0.05')
+	blue_patch = mpatches.Patch(color='blue', label='< p = 0.05')
+
+	ax.legend(handles=[red_patch, blue_patch], loc='center left', bbox_to_anchor=(1, 0.5))
+
+	pv_plot = lc.get_figure()
+	plt.show()
+	# final_df.to_csv('dataframe.txt', sep='\t')
+
+###############
+	# reg_x = final_df['window_mean']
+	# reg_y = final_df['Percent_Transmission']
+	#
+	# model = sm.OLS(final_df['Percent_Transmission'], sm.add_constant(final_df['window_mean']))
+	# model_fit = model.fit()
+	# p = model_fit.params
+	# print(model_fit.summary())
+	#
+	# fig = plt.figure(figsize=(12, 8))
+	# fig = sm.graphics.plot_regress_exog(model_fit, 'window_mean', fig=fig)
+	# plt.show()
+
+	############################
+
+	# reg_x = final_df['window_mean'].values
+	# reg_y = final_df['Percent_Transmission'].values
+	# slope, intercept, r_value, p_value, std_err = stats.linregress(reg_x, reg_y)
+	# print("slope: %f    intercept: %f" % (slope, intercept))
+	# print("R-squared: %f" % r_value ** 2)
+	#
+	# plt.plot(reg_x, reg_y, 'o', label='original data')
+	# reg = plt.plot(reg_x, intercept + slope * reg_x, 'r', label='fitted line')
+	# plt.legend()
+	# plt.show()
+
+	return pv_plot
+
+
+
+
+
+	###############################
+	# transmission_plot = sns.scatterplot(x='window_mean', y='Percent_Transmission', data=final_df, hue='Comparison', palette='Set1')
+	# transmission_plot.ticklabel_format(axis='x', useOffset=False)
+	# plt.gcf().subplots_adjust(bottom=0.3)
+	#
+	# # set title
+	# plt.title('Forward Plot')
+	# # Set x-axis label
+	# plt.xlabel('Window Position (pixels)')
+	# # Set y-axis label
+	# plt.ylabel('Percent Transmission')
+	#
+	# transmission_figure = transmission_plot.get_figure()
+	# transmission_figure.savefig("pvalue_figure.png")
+	# my_plot = plt.show()
+	#
+
+	#return final_df
 
 
 coordinates = parse_xml("/Users/elysevischulis/Downloads/X401x492-2m1.xml")
@@ -298,6 +400,7 @@ coordinates = parse_xml("/Users/elysevischulis/Downloads/X401x492-2m1.xml")
 ordered_coord = sliding_window(coordinates, 400, 2)
 
 chi = chisquare_test(ordered_coord)
+pplot = pval_plot( chi )
 #coordinates = check_xml_error("/Users/elysevischulis/Downloads/X4-2x484-4m4_just_4.xml")
 
 #coordinates = check_xml_error("/Users/elysevischulis/Downloads/X401x492-2m1.xml")
