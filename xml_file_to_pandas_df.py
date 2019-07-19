@@ -76,7 +76,7 @@ def parse_xml(input_xml):
 	df['X-Coordinate'] = df['X-Coordinate'].astype(np.int64)
 	df['Y-Coordinate'] = df['Y-Coordinate'].astype(np.int64)
 
-	return df
+	return df, image_name_string
 
 
 # # End of function
@@ -92,11 +92,11 @@ def parse_xml(input_xml):
 	#figure = ax.get_figure()
 	# figure.savefig("coord_plot.png")
 	# my_plot = plt.show()
+	#
+	# return figure
 
-	return figure
 
-
-def sliding_window(df, w, s):
+def sliding_window(df, w, s, image_name_string):
 	# # sort x values from small to big
 	df.sort_values(by=['X-Coordinate'], inplace=True)
 	df = df.reset_index(drop=True)
@@ -116,8 +116,7 @@ def sliding_window(df, w, s):
 	steps = int_s
 
 	# # creating empty dataframe
-	kern_count_df = pd.DataFrame(
-		columns='Step_Size Window_Start Window_End Total_Kernels Total_Fluor Total_NonFluor'.split())
+	kern_count_df = pd.DataFrame(columns='File Step_Size Window_Start Window_End Total_Kernels Total_Fluor Total_NonFluor'.split())
 
 	final_x_coord = df["X-Coordinate"].tail(1)
 	int_fxc = int(final_x_coord)
@@ -158,16 +157,16 @@ def sliding_window(df, w, s):
 		else:
 			nonfluor_tot = 0
 
-		data = [[steps, window_start, window_end, kernel_tot, fluor_tot, nonfluor_tot]]
-		data_df = pd.DataFrame(data=data,
-							   columns='Step_Size Window_Start Window_End Total_Kernels Total_Fluor Total_NonFluor'.split())
+		data = [[image_name_string, steps, window_start, window_end, kernel_tot, fluor_tot, nonfluor_tot]]
+		data_df = pd.DataFrame(data=data, columns='File Step_Size Window_Start Window_End Total_Kernels Total_Fluor Total_NonFluor'.split())
 		kern_count_df = kern_count_df.append(data_df)
 
 		int_start_x = int_start_x + steps
 		end_x = end_x + steps
 
 	kern_count_df = kern_count_df.reset_index(drop=True)
-	kern_count_df = kern_count_df.apply(pd.to_numeric)
+	cols = kern_count_df.columns.drop(['File'])
+	kern_count_df[cols] = kern_count_df[cols].apply(pd.to_numeric)
 
 	return kern_count_df
 
@@ -204,7 +203,7 @@ def transmission_scatter ( kern_count_df ):
 	transmission_figure.savefig("transmission_figure.png")
 	my_plot = plt.show()
 
-	return transmission_figure
+	return transmission_figure, kern_count_df
 
 
 def check_xml_error( input_xml ):
@@ -341,33 +340,6 @@ def pval_plot( final_df ):
 
 	pv_plot = lc.get_figure()
 	plt.show()
-	# final_df.to_csv('dataframe.txt', sep='\t')
-
-###############
-	# reg_x = final_df['window_mean']
-	# reg_y = final_df['Percent_Transmission']
-	#
-	# model = sm.OLS(final_df['Percent_Transmission'], sm.add_constant(final_df['window_mean']))
-	# model_fit = model.fit()
-	# p = model_fit.params
-	# print(model_fit.summary())
-	#
-	# fig = plt.figure(figsize=(12, 8))
-	# fig = sm.graphics.plot_regress_exog(model_fit, 'window_mean', fig=fig)
-	# plt.show()
-
-	############################
-
-	# reg_x = final_df['window_mean'].values
-	# reg_y = final_df['Percent_Transmission'].values
-	# slope, intercept, r_value, p_value, std_err = stats.linregress(reg_x, reg_y)
-	# print("slope: %f    intercept: %f" % (slope, intercept))
-	# print("R-squared: %f" % r_value ** 2)
-	#
-	# plt.plot(reg_x, reg_y, 'o', label='original data')
-	# reg = plt.plot(reg_x, intercept + slope * reg_x, 'r', label='fitted line')
-	# plt.legend()
-	# plt.show()
 
 	return pv_plot
 
@@ -395,9 +367,9 @@ def pval_plot( final_df ):
 	#return final_df
 
 
-coordinates = parse_xml("/Users/elysevischulis/Downloads/X401x492-2m1.xml")
+coordinates, filename = parse_xml("/Users/elysevischulis/Downloads/X401x492-2m1.xml")
 
-ordered_coord = sliding_window(coordinates, 400, 2)
+ordered_coord = sliding_window(coordinates, 400, 2, filename)
 
 chi = chisquare_test(ordered_coord)
 pplot = pval_plot( chi )
@@ -406,6 +378,6 @@ pplot = pval_plot( chi )
 #coordinates = check_xml_error("/Users/elysevischulis/Downloads/X401x492-2m1.xml")
 
 
-#transmission_scatter(ordered_coord)
+plot, df = transmission_scatter(ordered_coord)
 
 

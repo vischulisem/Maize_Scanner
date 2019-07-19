@@ -10,14 +10,21 @@
 
 import sys
 import os
-import argparse
 import numpy as np
+import argparse
 import xml.etree.ElementTree as ET
 import pandas as pd
+from pandas import Series, DataFrame
+
 import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
+from matplotlib.collections import LineCollection
+from matplotlib.colors import ListedColormap, BoundaryNorm
 import seaborn as sns
-
-
+from pylab import rcParams
+from scipy import stats
+import pylab as pl
+from matplotlib import collections  as mc
 
 
 #setting up argparse arguments
@@ -180,7 +187,7 @@ def sliding_window(df, w, s, filename):
 
 	# # creating empty dataframe
 	kern_count_df = pd.DataFrame(
-		columns='Step_Size Window_Start Window_End Total_Kernels Total_Fluor Total_NonFluor'.split())
+		columns='File Step_Size Window_Start Window_End Total_Kernels Total_Fluor Total_NonFluor'.split())
 
 	#Assigning variable to final x coordinate in dataframe
 	final_x_coord = df["X-Coordinate"].tail(1)
@@ -237,11 +244,11 @@ def sliding_window(df, w, s, filename):
 			nonfluor_tot = 0
 
 		#creating list with variables we just calculated
-		data = [[steps, window_start, window_end, kernel_tot, fluor_tot, nonfluor_tot]]
+		data = [[filename, steps, window_start, window_end, kernel_tot, fluor_tot, nonfluor_tot]]
 
 		#putting list into dataframe (which is just 1 row)
 		data_df = pd.DataFrame(data=data,
-							   columns='Step_Size Window_Start Window_End Total_Kernels Total_Fluor Total_NonFluor'.split())
+							   columns='File Step_Size Window_Start Window_End Total_Kernels Total_Fluor Total_NonFluor'.split())
 
 		#appending data_df to kern_count_df (1 row added each time)
 		kern_count_df = kern_count_df.append(data_df)
@@ -252,23 +259,24 @@ def sliding_window(df, w, s, filename):
 
 	#resetting index
 	kern_count_df = kern_count_df.reset_index(drop=True)
-	kern_count_df = kern_count_df.apply(pd.to_numeric)
+	cols = kern_count_df.columns.drop(['File'])
+	kern_count_df[cols] = kern_count_df[cols].apply(pd.to_numeric)
 
 	ans3 = 'Neither'
 
 	return kern_count_df, ans1, ans2, ans3
 
 #function for plotting total kernels vs average window position
-#def tot_kern_scatter ( kern_count_df ):
-	#col = kern_count_df.loc[: , "Window_Start":"Window_End"]
-	#kern_count_df['window_mean'] = col.mean(axis=1)
+def tot_kern_scatter ( kern_count_df ):
+	col = kern_count_df.loc[: , "Window_Start":"Window_End"]
+	kern_count_df['window_mean'] = col.mean(axis=1)
 
-	#kern_tot_scatter = sns.scatterplot("window_mean", "Total_Kernels", data=kern_count_df, palette='Set1')
-	#tot_kern_figure = kern_tot_scatter.get_figure()
-	#tot_kern_figure.savefig("tot_kern_figure.png")
-	#my_plot = plt.show()
+	kern_tot_scatter = sns.scatterplot("window_mean", "Total_Kernels", data=kern_count_df, palette='Set1')
+	tot_kern_figure = kern_tot_scatter.get_figure()
+	tot_kern_figure.savefig("tot_kern_figure.png")
+	my_plot = plt.show()
 
-	#return tot_kern_figure
+	return tot_kern_figure
 
 #function for plotting percent transmission to average window position
 # # plots are saved by file name.png and put into new directory called
@@ -316,10 +324,138 @@ def transmission_scatter ( kern_count_df, xml ):
 	return transmission_figure
 
 
+
+def chisquare_test ( kern_count_df ):
+
+	index = 0
+	end_index = kern_count_df.index[-1]
+	temp_df = pd.DataFrame(columns='P-Value Comparison'.split())
+
+	while index <= end_index:
+
+		single_row = kern_count_df.iloc[[index]]
+		single_row = single_row.loc[:, 'Total_Kernels':'Total_NonFluor']
+
+		expected = single_row['Total_Kernels'].values[0] * 0.5
+		fluor = single_row['Total_Fluor'].values[0]
+		nonfluor = single_row['Total_NonFluor'].values[0]
+
+		chi_stat = stats.chisquare([fluor, nonfluor], [expected, expected])
+		pval = chi_stat[1]
+
+		if pval <= 0.05:
+			p_input = '< p = 0.05'
+		else:
+			p_input = '> p = 0.05'
+
+		data = [[pval, p_input]]
+		data_df = pd.DataFrame(data=data, columns='P-Value Comparison'.split())
+		temp_df = temp_df.append(data_df)
+
+		index = index + 1
+	temp_df = temp_df.reset_index(drop=True)
+	final_df = pd.concat([kern_count_df, temp_df], axis=1, sort=False)
+	final_df = final_df.reset_index(drop=True)
+
+	return final_df
+
+def pval_plot( final_df, xml):
+	plt.rcParams.update({'figure.max_open_warning': 0})
+
+	col = final_df.loc[:, "Window_Start":"Window_End"]
+	final_df['window_mean'] = col.mean(axis=1)
+
+	final_df['Percent_Transmission'] = final_df['Total_Fluor'] / final_df['Total_Kernels']
+	end_index = final_df.index[-1]
+
+	reg_x = final_df['window_mean'].values
+	reg_y = final_df['Percent_Transmission'].values
+	slope, intercept, r_value, p_value, std_err = stats.linregress(reg_x, reg_y)
+
+	segments = []
+	colors = np.zeros(shape=(end_index, 4))
+	x = final_df['window_mean'].values
+	y = final_df['Percent_Transmission'].values
+	z = final_df['P-Value'].values
+	i = 0
+
+	for x1, x2, y1, y2, z1, z2 in zip(x, x[1:], y, y[1:], z, z[1:]):
+		if z1 > 0.05:
+			colors[i] = tuple([1, 0, 0, 1])
+		elif z1 <= 0.05:
+			colors[i] = tuple([0, 0, 1, 1])
+		else:
+			colors[i] = tuple([0, 1, 0, 1])
+		segments.append([(x1, y1), (x2, y2)])
+		i += 1
+
+	lc = mc.LineCollection(segments, colors=colors, linewidths=2)
+	fig, ax = pl.subplots(figsize=(11.7,8.27))
+	ax.add_collection(lc)
+	ax.autoscale()
+	ax.margins(0.1)
+	plt.plot(reg_x, intercept + slope * reg_x, 'r', label='fitted line', color='black', linewidth=3, dashes=[5, 3])
+
+	ax.set_xlim(np.min(x)-50, np.max(x)+50)
+	ax.set_ylim(0, 1)
+	plt.yticks(np.arange(0, 1, step=0.25))
+	plt.figure(figsize=(11.7, 8.27))
+
+
+	ax.set_title(xml[:-4]+' Plot', fontsize=30, fontweight='bold')
+	ax.set_xlabel('Window Position (pixels)', fontsize=20, fontweight='bold')
+	ax.set_ylabel('% GFP', fontsize=20, fontweight='bold')
+
+	ax.set_facecolor('white')
+	ax.yaxis.grid(color='grey')
+
+	ax.spines['bottom'].set_color('black')
+	ax.spines['top'].set_color('black')
+	ax.spines['right'].set_color('black')
+	ax.spines['left'].set_color('black')
+
+	red_patch = mpatches.Patch(color='red', label='> p = 0.05')
+	blue_patch = mpatches.Patch(color='blue', label='< p = 0.05')
+	ax.legend(handles=[red_patch, blue_patch], loc='center left', bbox_to_anchor=(1, 0.5))
+
+	pv_plot = lc.get_figure()
+
+	# create directory to save plots
+	script_dir = os.path.dirname(__file__)
+	results_dir = os.path.join(script_dir, 'Transmission_plots/')
+	# sample_file_name
+	sample_file_name = xml[:-4] + '.png'
+
+	if not os.path.isdir(results_dir):
+		os.makedirs(results_dir)
+
+	pv_plot.savefig(results_dir + sample_file_name, bbox_inches="tight")
+	plt.close()
+
+# Creating temporary dataframe that will append to the meta df in main
+
+	total_kernels = len(final_df.index)
+	total_fluor = final_df['Total_Fluor'].sum()
+	perc_trans = total_fluor/total_kernels
+
+	all_data = [[xml[:-4], total_kernels, perc_trans, r_value ** 2, p_value, slope]]
+
+	# putting list into dataframe (which is just 1 row)
+	data_df = pd.DataFrame(data=all_data, columns='File_Name Total_Kernels Percent_Transmission R-Squared P-Value Slope'.split())
+
+	return pv_plot, data_df
+
+
+
+
+
 #Main function for running the whole script with argparse
 # # if - allows you to input xml file as first argument
 # # # else - allows you to input directory of xml files as argument
 def main():
+	meta_df = pd.DataFrame(columns='File_Name Total_Kernels Percent_Transmission R-Squared P-Value Slope'.split())
+	everything_df = pd.DataFrame(columns='File Step_Size Window_Start Window_End Total_Kernels Total_Fluor Total_NonFluor P-Value Comparison window_mean Percent_Transmission'.split())
+
 	if args.xml.endswith(".xml"):
 		result, tree = check_xml_error(args.xml)
 		if result == 'True':
@@ -330,7 +466,12 @@ def main():
 		dataframe2, ans1, ans2, ans3 = sliding_window(dataframe, args.width, args.step_size, args.xml)
 		if (ans1 == 'True') or (ans2 == 'True') or (ans3 == 'True'):
 			sys.exit('Program Exit')
-		final_plot = transmission_scatter(dataframe2, args.xml)
+		chi_df = chisquare_test(dataframe2)
+		trans_plot, end_df = pval_plot(chi_df, args.xml)
+		meta_df = meta_df.append(end_df)
+		meta_df = meta_df.reset_index(drop=True)
+	# meta_df.to_csv('meta_df.txt', sep='\t')
+
 	else:
 		for roots, dirs, files in os.walk(args.xml):
 			for filename in files:
@@ -345,9 +486,19 @@ def main():
 						dataframe2, ans1, ans2, ans3 = sliding_window(dataframe, args.width, args.step_size, filename)
 						if (ans1 == 'True') or (ans2 == 'True') or (ans3 == 'True'):
 							continue
-						final_plot = transmission_scatter(dataframe2, filename)
+						chi_df = chisquare_test(dataframe2)
+						trans_plot, end_df = pval_plot(chi_df, filename)
 
+						everything_df = everything_df.append(chi_df)
+						everything_df = everything_df.reset_index(drop=True)
+						meta_df = meta_df.append(end_df)
+						meta_df = meta_df.reset_index(drop=True)
+
+	everything_df.to_csv('everything_df.txt', sep='\t')
+	meta_df.to_csv('meta_df.txt', sep='\t')
 	print('Process Complete!')
+
+
 
 if __name__ == '__main__':
 	main()
