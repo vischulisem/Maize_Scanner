@@ -20,6 +20,7 @@ from scipy import stats
 import pylab as pl
 from matplotlib import collections  as mc
 import re
+from sklearn import preprocessing
 
 def everything_everything_graph ( input_df ):
 	sns.set_style("white")
@@ -138,44 +139,67 @@ def female_cross_plot (input_df):
 
 	return female_plot
 
-def male_fam_plot (input_df):
-	#i = 400
-	#while i > 500:
-	sns.set_style("white")
-	data = pd.read_csv(input_df, sep="\t")
-	data = data[data['File'].str.contains(r'x4..')]
-	i = 404
-	search_values = ['x'+ str(i)]
-	data = data[data.File.str.contains('|'.join(search_values))]
+def male_fam_plot (input_df, low, high):
 
-	male = sns.lineplot(x="window_mean", y="Percent_Transmission", data=data, hue="File", linewidth=5)
-	sns.set(rc={'figure.figsize': (11.7, 8.27)})
-	plt.ylim(0, 1)
-	male.yaxis.grid(True)
+	print(f'start')
+	for i in range(low, high):
+		print(f'for loop')
+		data = pd.read_csv(input_df, sep="\t")
+		data = data[data['File'].str.contains(r'x4..')]
+		search_values = ['x'+ str(i)]
+		data = data[data.File.str.contains('|'.join(search_values))]
+		print(f'end of for loop')
 
-	plt.title('400 Plot', fontsize=30, weight='bold', loc='center', verticalalignment='baseline')
-	plt.xlabel('Window Position (pixels)', fontsize=18, weight='bold')
-	plt.ylabel('Percent Transmission', fontsize=18, weight='bold')
+		if data.empty:
+			continue
+		else:
+			print(f'start else')
+			group = data.groupby('File')
+			df2 = group.apply(lambda x: x['window_mean'].unique())
+			temp_df = pd.DataFrame(columns='File window_mean'.split())
+			for index, value in df2.items():
+				print(f'normalize')
+				a = value
+				a = (a - min(a)) / (max(a) - min(a))
 
-	male_graph = male.get_figure()
-
-	# create directory to save plots
-	script_dir = os.path.dirname(__file__)
-	results_dir = os.path.join(script_dir, 'Male_Plots/')
-	# sample_file_name
-	sample_file_name = 'fourhundred.png'
-
-	if not os.path.isdir(results_dir):
-		os.makedirs(results_dir)
-
-	male_graph.savefig(results_dir + sample_file_name, bbox_inches="tight")
-	plt.close()
-
-		# i = i + 1
+				#df2 = df2.reset_index(name='window_mean')
+				df2 = pd.DataFrame(data=df2, columns='window_mean'.split())
+				# df2 = df2.reset_index()
+				df2 = df2.explode('window_mean')
+				temp_df = temp_df.append(df2)
+				temp_df = temp_df.reset_index(drop=True)
+				print(f'hi')
 
 
+			sns.set_style("white")
+			male = sns.lineplot(x="window_mean", y="Percent_Transmission", data=data, hue="File", linewidth=5)
+			sns.set(rc={'figure.figsize': (11.7, 8.27)})
+			plt.ylim(0, 1)
+			male.yaxis.grid(True)
+			male.legend(loc='center left', bbox_to_anchor=(1.02, 0.5))
+			print(f'graph part')
+			plt.title(repr(i) + ' Plot', fontsize=30, weight='bold', loc='center', verticalalignment='baseline')
+			plt.xlabel('Window Position (pixels)', fontsize=18, weight='bold')
+			plt.ylabel('Percent Transmission', fontsize=18, weight='bold')
 
-	return male_graph
+			male_graph = male.get_figure()
+
+			# create directory to save plots
+			script_dir = os.path.dirname(__file__)
+			results_dir = os.path.join(script_dir, 'Male_Plots/')
+			# sample_file_name
+			sample_file_name = repr(i) + '.png'
+
+			if not os.path.isdir(results_dir):
+				os.makedirs(results_dir)
+
+			male_graph.savefig(results_dir + sample_file_name, bbox_inches="tight")
+			plt.close()
+
+	print(f'end')
+
+
+	return male_graph, df2, temp_df
 
 
 
@@ -187,4 +211,4 @@ def male_fam_plot (input_df):
 
 #shemale = female_cross_plot("/Users/elysevischulis/Scripts/everything_df.txt")
 
-male_plots = male_fam_plot("/Users/elysevischulis/Scripts/everything_df.txt")
+male_plots, df2, df3 = male_fam_plot("/Users/elysevischulis/Scripts/everything_df.txt", 420, 430)
