@@ -3,19 +3,12 @@ import sys
 import numpy as np
 import xml.etree.ElementTree as ET
 import pandas as pd
-from pandas import Series, DataFrame
-
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
-from matplotlib.collections import LineCollection
-from matplotlib.colors import ListedColormap, BoundaryNorm
 import seaborn as sns
-from pylab import rcParams
 from scipy import stats
 import pylab as pl
 from matplotlib import collections  as mc
-import statsmodels.api as sm
-from statsmodels.graphics.regressionplots import abline_plot
 
 sns.set(rc={'figure.figsize': (9, 2.5)})
 
@@ -76,7 +69,34 @@ def parse_xml(input_xml):
 	df['X-Coordinate'] = df['X-Coordinate'].astype(np.int64)
 	df['Y-Coordinate'] = df['Y-Coordinate'].astype(np.int64)
 
-	return df, image_name_string
+	df['randGFP'] = np.random.randint(1, 3, df.shape[0])
+
+	#overall ear stats
+	overall_kernel_total = int(len(df.index))
+	overall_expected = overall_kernel_total * 0.5
+
+	if any(df.Type == 'Fluorescent'):
+		x = df['Type'].value_counts()
+		overall_fluor_tot = x['Fluorescent']
+	else:
+		overall_fluor_tot = 0
+
+	overall_perc_trans = overall_fluor_tot/overall_kernel_total
+
+	if any(df.Type == 'Non-Fluorescent'):
+		x = df['Type'].value_counts()
+		overall_nonfluor_tot = x['Non-Fluorescent']
+	else:
+		overall_nonfluor_tot = 0
+
+	chi_stat = stats.chisquare([overall_fluor_tot, overall_nonfluor_tot], [overall_expected, overall_expected])
+	overall_pval = chi_stat[1]
+
+
+
+
+
+	return df, image_name_string, overall_kernel_total, overall_perc_trans, overall_pval
 
 
 # # End of function
@@ -277,7 +297,7 @@ def chisquare_test ( kern_count_df ):
 
 	return final_df
 
-def pval_plot( final_df ):
+def pval_plot( final_df, overall_kernel_total, overall_perc_trans, overall_pval):
 
 	col = final_df.loc[:, "Window_Start":"Window_End"]
 	final_df['window_mean'] = col.mean(axis=1)
@@ -285,9 +305,17 @@ def pval_plot( final_df ):
 	final_df['Percent_Transmission'] = final_df['Total_Fluor'] / final_df['Total_Kernels']
 	end_index = final_df.index[-1]
 
+	num_weird_trans = len(final_df[final_df['Comparison'] == '< p = 0.05'])
+	num_tkern = int(len(final_df))
+
+	window_stat = num_weird_trans/num_tkern
+	window_stat = round(window_stat, 3)
+
+
 	reg_x = final_df['window_mean'].values
 	reg_y = final_df['Percent_Transmission'].values
 	slope, intercept, r_value, p_value, std_err = stats.linregress(reg_x, reg_y)
+	rsq = r_value ** 2
 
 
 	segments = []
@@ -338,10 +366,33 @@ def pval_plot( final_df ):
 
 	ax.legend(handles=[red_patch, blue_patch], loc='center left', bbox_to_anchor=(1, 0.5))
 
+	overall_kernel_total = round(overall_kernel_total, 3)
+	overall_perc_trans = round(overall_perc_trans, 3)
+	overall_pval = '{:0.3e}'.format(overall_pval)
+	slope = round(slope, 5)
+	intercept = round(intercept, 3)
+	rsq = round(rsq, 3)
+	p_value = '{:0.3e}'.format(p_value)
+
+
+
+	textstr = '\n'.join((f'Overall Total Kernels = {overall_kernel_total}',
+						 f'Overall Percent Transmission = {overall_perc_trans}',
+						 f'Overall ChiSquared P-Value = {overall_pval}',
+						 f'% Windows not 0.5 Transmission = {window_stat}',
+						 f'Regression Slope = {slope}',
+						 f'Regression Intercept = {intercept}',
+						 f'Regression R-squared = {rsq}',
+						 f'Regression P-Value = {p_value}'))
+
+	ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=12, fontweight='bold',
+			verticalalignment='top', bbox={'facecolor':'white', 'alpha':1, 'pad':10, 'edgecolor':'black'})
+
+
 	pv_plot = lc.get_figure()
 	plt.show()
 
-	return pv_plot
+	return pv_plot, final_df
 
 
 
@@ -367,17 +418,17 @@ def pval_plot( final_df ):
 	#return final_df
 
 
-coordinates, filename = parse_xml("/Users/elysevischulis/Downloads/X401x492-2m1.xml")
+coordinates, filename, overall_kernel_total, overall_perc_trans, overall_pval = parse_xml("/Users/elysevischulis/Downloads/X401x492-2m1.xml")
 
 ordered_coord = sliding_window(coordinates, 400, 2, filename)
 
 chi = chisquare_test(ordered_coord)
-pplot = pval_plot( chi )
+pplot, final_df = pval_plot( chi, overall_kernel_total, overall_perc_trans, overall_pval )
 #coordinates = check_xml_error("/Users/elysevischulis/Downloads/X4-2x484-4m4_just_4.xml")
 
 #coordinates = check_xml_error("/Users/elysevischulis/Downloads/X401x492-2m1.xml")
 
 
-plot, df = transmission_scatter(ordered_coord)
+#plot, df = transmission_scatter(ordered_coord)
 
 

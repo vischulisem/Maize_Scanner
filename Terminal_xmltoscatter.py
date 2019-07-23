@@ -145,8 +145,29 @@ def parse_xml(input_xml, tree):
 	df['X-Coordinate'] = df['X-Coordinate'].astype(np.int64)
 	df['Y-Coordinate'] = df['Y-Coordinate'].astype(np.int64)
 
+	#overall ear stats
+	overall_kernel_total = int(len(df.index))
+	overall_expected = overall_kernel_total * 0.5
 
-	return df
+	if any(df.Type == 'Fluorescent'):
+		x = df['Type'].value_counts()
+		overall_fluor_tot = x['Fluorescent']
+	else:
+		overall_fluor_tot = 0
+
+	overall_perc_trans = overall_fluor_tot/overall_kernel_total
+
+	if any(df.Type == 'Non-Fluorescent'):
+		x = df['Type'].value_counts()
+		overall_nonfluor_tot = x['Non-Fluorescent']
+	else:
+		overall_nonfluor_tot = 0
+
+	chi_stat = stats.chisquare([overall_fluor_tot, overall_nonfluor_tot], [overall_expected, overall_expected])
+	overall_pval = chi_stat[1]
+
+
+	return df, overall_kernel_total, overall_perc_trans, overall_pval
 
 
 # # End of function
@@ -359,7 +380,7 @@ def chisquare_test ( kern_count_df ):
 
 	return final_df
 
-def pval_plot( final_df, xml):
+def pval_plot( final_df, xml, overall_kernel_total, overall_perc_trans, overall_pval):
 	plt.rcParams.update({'figure.max_open_warning': 0})
 
 	col = final_df.loc[:, "Window_Start":"Window_End"]
@@ -371,6 +392,7 @@ def pval_plot( final_df, xml):
 	reg_x = final_df['window_mean'].values
 	reg_y = final_df['Percent_Transmission'].values
 	slope, intercept, r_value, p_value, std_err = stats.linregress(reg_x, reg_y)
+	rsq = r_value ** 2
 
 	segments = []
 	colors = np.zeros(shape=(end_index, 4))
@@ -418,6 +440,34 @@ def pval_plot( final_df, xml):
 	blue_patch = mpatches.Patch(color='blue', label='< p = 0.05')
 	ax.legend(handles=[red_patch, blue_patch], loc='center left', bbox_to_anchor=(1, 0.5))
 
+	num_weird_trans = len(final_df[final_df['Comparison'] == '< p = 0.05'])
+	num_tkern = int(len(final_df))
+
+	window_stat = num_weird_trans / num_tkern
+	window_stat = round(window_stat, 3)
+
+	overall_kernel_total = round(overall_kernel_total, 3)
+	overall_perc_trans = round(overall_perc_trans, 3)
+	overall_pval = '{:0.3e}'.format(overall_pval)
+	slope = round(slope, 5)
+	intercept = round(intercept, 3)
+	rsq = round(rsq, 3)
+	p_value = '{:0.3e}'.format(p_value)
+
+
+
+	textstr = '\n'.join((f'Overall Total Kernels = {overall_kernel_total}',
+						 f'Overall Percent Transmission = {overall_perc_trans}',
+						 f'Overall ChiSquared P-Value = {overall_pval}',
+						 f'% Windows not 0.5 Transmission = {window_stat}',
+						 f'Regression Slope = {slope}',
+						 f'Regression Intercept = {intercept}',
+						 f'Regression R-squared = {rsq}',
+						 f'Regression P-Value = {p_value}'))
+
+	ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=12, fontweight='bold',
+			verticalalignment='top', bbox={'facecolor':'white', 'alpha':1, 'pad':10, 'edgecolor':'black'})
+
 	pv_plot = lc.get_figure()
 
 	# create directory to save plots
@@ -462,7 +512,7 @@ def main():
 			sys.exit('Program Exit')
 		# check xml error fun
 		print(f'Processing {args.xml}...')
-		dataframe = parse_xml(args.xml, tree)
+		dataframe, overall_kernel_total, overall_perc_trans, overall_pval = parse_xml(args.xml, tree)
 		dataframe2, ans1, ans2, ans3 = sliding_window(dataframe, args.width, args.step_size, args.xml)
 		if (ans1 == 'True') or (ans2 == 'True') or (ans3 == 'True'):
 			sys.exit('Program Exit')
@@ -482,12 +532,12 @@ def main():
 						result, tree = check_xml_error(f)
 						if result == 'True':
 							continue
-						dataframe = parse_xml(f, tree)
+						dataframe, overall_kernel_total, overall_perc_trans, overall_pval = parse_xml(f, tree)
 						dataframe2, ans1, ans2, ans3 = sliding_window(dataframe, args.width, args.step_size, filename)
 						if (ans1 == 'True') or (ans2 == 'True') or (ans3 == 'True'):
 							continue
 						chi_df = chisquare_test(dataframe2)
-						trans_plot, end_df = pval_plot(chi_df, filename)
+						trans_plot, end_df = pval_plot(chi_df, filename, overall_kernel_total, overall_perc_trans, overall_pval)
 
 						everything_df = everything_df.append(chi_df)
 						everything_df = everything_df.reset_index(drop=True)

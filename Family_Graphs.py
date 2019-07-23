@@ -159,16 +159,16 @@ def male_fam_plot (input_df, low, high):
 			plt.plot(reg_x, intercept + slope * reg_x, 'r', label='fitted line', color='black', linewidth=3,
 					 dashes=[5, 3])
 
-			def regress (data, x, y):
-				r_x = data['x']
-				r_y = data['y']
-				slope, intercept, r_value, p_value, std_err = stats.linregress(r_x, r_y)
-				plt.plot(r_x, intercept + slope * r_x, 'r', label='fitted line', color='red', linewidth=2,
-						 dashes=[5, 3])
-				return male_graph
-
-			data.groupby('File').apply[regress(data, data['Normalized_Window_Mean'].values, data['Percent_Transmission'].values)]
-
+			# def regress (data, x, y):
+			# 	r_x = data['x']
+			# 	r_y = data['y']
+			# 	slope, intercept, r_value, p_value, std_err = stats.linregress(r_x, r_y)
+			# 	plt.plot(r_x, intercept + slope * r_x, 'r', label='fitted line', color='red', linewidth=2,
+			# 			 dashes=[5, 3])
+			# 	return male_graph
+			#
+			# data.groupby('File').apply[regress(data, data['Normalized_Window_Mean'].values, data['Percent_Transmission'].values)]
+			#
 
 			male_graph = male.get_figure()
 
