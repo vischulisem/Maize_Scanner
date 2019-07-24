@@ -806,20 +806,19 @@ def main():
 	everything_df = pd.DataFrame(columns='File Step_Size Window_Start Window_End Total_Kernels Total_Fluor Total_NonFluor P-Value Comparison window_mean Percent_Transmission'.split())
 
 	if args.xml.endswith(".xml"):
-		for i in range(0, 5):
-			result, tree = check_xml_error(args.xml)
-			if result == 'True':
-				sys.exit('Program Exit')
-			# check xml error fun
-			print(f'Processing {args.xml}...')
-			dataframe, overall_1kernel_total, overall_1perc_trans, overall_1pval, overall_2kernel_total, overall_2perc_trans, overall_2pval, overall_3kernel_total, overall_3perc_trans, overall_3pval, overall_4kernel_total, overall_4perc_trans, overall_4pval, overall_5kernel_total, overall_5perc_trans, overall_5pval = parse_xml(args.xml, tree)
-			dataframe2, ans1, ans2, ans3 = sliding_window(dataframe, args.width, args.step_size, args.xml)
-			if (ans1 == 'True') or (ans2 == 'True') or (ans3 == 'True'):
-				sys.exit('Program Exit')
-			chi_df = chisquare_test(dataframe2)
-			trans_plot, end_df = pval_plot(chi_df, args.xml, overall_1kernel_total, overall_1perc_trans, overall_1pval, overall_2kernel_total, overall_2perc_trans, overall_2pval, overall_3kernel_total, overall_3perc_trans, overall_3pval, overall_4kernel_total, overall_4perc_trans, overall_4pval, overall_5kernel_total, overall_5perc_trans, overall_5pval)
-			meta_df = meta_df.append(end_df)
-			meta_df = meta_df.reset_index(drop=True)
+		result, tree = check_xml_error(args.xml)
+		if result == 'True':
+			sys.exit('Program Exit')
+		# check xml error fun
+		print(f'Processing {args.xml}...')
+		dataframe, overall_1kernel_total, overall_1perc_trans, overall_1pval, overall_2kernel_total, overall_2perc_trans, overall_2pval, overall_3kernel_total, overall_3perc_trans, overall_3pval, overall_4kernel_total, overall_4perc_trans, overall_4pval, overall_5kernel_total, overall_5perc_trans, overall_5pval = parse_xml(args.xml, tree)
+		dataframe2, ans1, ans2, ans3 = sliding_window(dataframe, args.width, args.step_size, args.xml)
+		if (ans1 == 'True') or (ans2 == 'True') or (ans3 == 'True'):
+			sys.exit('Program Exit')
+		chi_df = chisquare_test(dataframe2)
+		trans_plot, end_df = pval_plot(chi_df, args.xml, overall_1kernel_total, overall_1perc_trans, overall_1pval, overall_2kernel_total, overall_2perc_trans, overall_2pval, overall_3kernel_total, overall_3perc_trans, overall_3pval, overall_4kernel_total, overall_4perc_trans, overall_4pval, overall_5kernel_total, overall_5perc_trans, overall_5pval)
+		meta_df = meta_df.append(end_df)
+		meta_df = meta_df.reset_index(drop=True)
 		# meta_df.to_csv('meta_df.txt', sep='\t')
 
 	else:
