@@ -1,12 +1,7 @@
 #!/usr/local/bin/python3
 
-#This script contains functions to extract XML kernel coordinates and put them into a dataframe
-#Next coordinates are plotted on a scatter plot to show the fluorescent and nonfluorescent kernel locations
-#Finally, Sliding_Window function generates a new dataframe based on desired width and steps of window
-# # and generates a plot comparing perecent transmission across different windows on the ear
+# this script is to test plotting multiple models on one graph, right now I am testing 2
 
-# # # Input arguments are an XML file, width, and steps
-# # # # Output is a scatter plot saved to a folder containing 'XML_filename'.png
 
 import sys
 import os
@@ -97,7 +92,6 @@ def check_xml_error( input_xml ):
 
 
 def parse_xml(input_xml, tree):
-
 	# Make element tree for object
 	#tree = ET.parse(input_xml)
 
@@ -144,122 +138,14 @@ def parse_xml(input_xml, tree):
 	# #Importing np.array into pandas dataframe and converting coordinate values from objects to integers
 	df = pd.DataFrame(data=combined_array, columns='File Type X-Coordinate Y-Coordinate'.split())
 
+
 	df['randGFP1'] = np.random.randint(1, 3, df.shape[0])
 	df['randGFP2'] = np.random.randint(1, 3, df.shape[0])
-	df['randGFP3'] = np.random.randint(1, 3, df.shape[0])
-	df['randGFP4'] = np.random.randint(1, 3, df.shape[0])
-	df['randGFP5'] = np.random.randint(1, 3, df.shape[0])
+
 
 	df['X-Coordinate'] = df['X-Coordinate'].astype(np.int64)
 	df['Y-Coordinate'] = df['Y-Coordinate'].astype(np.int64)
-
-	# #overall ear stats1
-	# overall_1kernel_total = int(len(df.index))
-	# overall_1expected = overall_1kernel_total * 0.5
-	#
-	# if any(df.randGFP1 == 1):
-	# 	x = df['randGFP1'].value_counts()
-	# 	overall_1fluor_tot = x[1]
-	# else:
-	# 	overall_1fluor_tot = 0
-	#
-	# overall_1perc_trans = overall_1fluor_tot/overall_1kernel_total
-	#
-	# if any(df.randGFP1 == 2):
-	# 	x = df['randGFP1'].value_counts()
-	# 	overall_1nonfluor_tot = x[2]
-	# else:
-	# 	overall_1nonfluor_tot = 0
-	#
-	# chi_1stat = stats.chisquare([overall_1fluor_tot, overall_1nonfluor_tot], [overall_1expected, overall_1expected])
-	# overall_1pval = chi_1stat[1]
-	#
-	#
-	# # overall ear stats2
-	# overall_2kernel_total = int(len(df.index))
-	# overall_2expected = overall_2kernel_total * 0.5
-	#
-	# if any(df.randGFP2 == 1):
-	# 	x = df['randGFP2'].value_counts()
-	# 	overall_2fluor_tot = x[1]
-	# else:
-	# 	overall_2fluor_tot = 0
-	#
-	# overall_2perc_trans = overall_2fluor_tot / overall_2kernel_total
-	#
-	# if any(df.randGFP2 == 2):
-	# 	x = df['randGFP2'].value_counts()
-	# 	overall_2nonfluor_tot = x[2]
-	# else:
-	# 	overall_2nonfluor_tot = 0
-	#
-	# chi_2stat = stats.chisquare([overall_2fluor_tot, overall_2nonfluor_tot], [overall_2expected, overall_2expected])
-	# overall_2pval = chi_2stat[1]
-	#
-	#
-	# # overall ear stats3
-	# overall_3kernel_total = int(len(df.index))
-	# overall_3expected = overall_3kernel_total * 0.5
-	#
-	# if any(df.randGFP3 == 1):
-	# 	x = df['randGFP3'].value_counts()
-	# 	overall_3fluor_tot = x[1]
-	# else:
-	# 	overall_3fluor_tot = 0
-	#
-	# overall_3perc_trans = overall_3fluor_tot / overall_3kernel_total
-	#
-	# if any(df.randGFP3 == 2):
-	# 	x = df['randGFP3'].value_counts()
-	# 	overall_3nonfluor_tot = x[2]
-	# else:
-	# 	overall_3nonfluor_tot = 0
-	#
-	# chi_3stat = stats.chisquare([overall_3fluor_tot, overall_3nonfluor_tot], [overall_3expected, overall_3expected])
-	# overall_3pval = chi_3stat[1]
-	#
-	# # overall ear stats4
-	# overall_4kernel_total = int(len(df.index))
-	# overall_4expected = overall_4kernel_total * 0.5
-	#
-	# if any(df.randGFP4 == 1):
-	# 	x = df['randGFP4'].value_counts()
-	# 	overall_4fluor_tot = x[1]
-	# else:
-	# 	overall_4fluor_tot = 0
-	#
-	# overall_4perc_trans = overall_4fluor_tot / overall_4kernel_total
-	#
-	# if any(df.randGFP4 == 2):
-	# 	x = df['randGFP4'].value_counts()
-	# 	overall_4nonfluor_tot = x[2]
-	# else:
-	# 	overall_4nonfluor_tot = 0
-	#
-	# chi_4stat = stats.chisquare([overall_4fluor_tot, overall_4nonfluor_tot], [overall_4expected, overall_4expected])
-	# overall_4pval = chi_4stat[1]
-	#
-	# # overall ear stats5
-	# overall_5kernel_total = int(len(df.index))
-	# overall_5expected = overall_5kernel_total * 0.5
-	#
-	# if any(df.randGFP5 == 1):
-	# 	x = df['randGFP5'].value_counts()
-	# 	overall_5fluor_tot = x[1]
-	# else:
-	# 	overall_5fluor_tot = 0
-	#
-	# overall_5perc_trans = overall_5fluor_tot / overall_5kernel_total
-	#
-	# if any(df.randGFP5 == 2):
-	# 	x = df['randGFP5'].value_counts()
-	# 	overall_5nonfluor_tot = x[2]
-	# else:
-	# 	overall_5nonfluor_tot = 0
-	#
-	# chi_5stat = stats.chisquare([overall_5fluor_tot, overall_5nonfluor_tot], [overall_5expected, overall_5expected])
-	# overall_5pval = chi_5stat[1]
-
+	df = df.reset_index(drop=True)
 	return df
 
 
@@ -301,7 +187,7 @@ def sliding_window(df, w, s, filename):
 
 	# # creating empty dataframe
 	kern_count_df = pd.DataFrame(
-		columns='File Step_Size Window_Start Window_End Total_Kernels Fluor1 Fluor2 Fluor3 Fluor4 Fluor5 NonFluor1 NonFluor2 NonFluor3 NonFluor4 NonFluor5'.split())
+		columns='File Step_Size Window_Start Window_End Total_Kernels Total_Fluor Total_NonFluor Fluor2 Nonfluor2'.split())
 
 	#Assigning variable to final x coordinate in dataframe
 	final_x_coord = df["X-Coordinate"].tail(1)
@@ -325,14 +211,14 @@ def sliding_window(df, w, s, filename):
 	# # Beginning of sliding window to scan ear and output new dataframe called kern_count_df
 	while end_x <= int_fxc:
 
-		#Creating smaller window df based on original df
+		# Creating smaller window df based on original df
 		rslt_df = df[(df['X-Coordinate'] >= int_start_x) & (df['X-Coordinate'] <= end_x)]
 
-		#Total kernels in window
+		# Total kernels in window
 		kernel_tot = len(rslt_df.index)
 
 
-		#Error message if there are no kernels in window
+		# Error message if there are no kernels in window
 		if kernel_tot == 0:
 			print(f'For {filename} - 0 Kernels in Window, please enter larger width value.')
 			ans3 = 'True'
@@ -346,71 +232,35 @@ def sliding_window(df, w, s, filename):
 
 		# Counting the number of fluor and nonfluor in window
 		if any(rslt_df.randGFP1 == 1):
-			x = df['randGFP1'].value_counts()
-			o_1fluor_tot = x[1]
+			x = rslt_df['randGFP1'].value_counts()
+			fluor_tot = x[1]
 		else:
-			o_1fluor_tot = 0
-
-		if any(rslt_df.randGFP2 == 1):
-			x = df['randGFP2'].value_counts()
-			o_2fluor_tot = x[1]
-		else:
-			o_2fluor_tot = 0
-
-		if any(rslt_df.randGFP3 == 1):
-			x = df['randGFP3'].value_counts()
-			o_3fluor_tot = x[1]
-		else:
-			o_3fluor_tot = 0
-
-		if any(rslt_df.randGFP4 == 1):
-			x = df['randGFP4'].value_counts()
-			o_4fluor_tot = x[1]
-		else:
-			o_4fluor_tot = 0
-
-		if any(rslt_df.randGFP5 == 1):
-			x = df['randGFP5'].value_counts()
-			o_5fluor_tot = x[1]
-		else:
-			o_5fluor_tot = 0
+			fluor_tot = 0
 
 		if any(rslt_df.randGFP1 == 2):
-			x = df['randGFP1'].value_counts()
-			o_1nonfluor_tot = x[2]
+			x = rslt_df['randGFP1'].value_counts()
+			nonfluor_tot = x[2]
 		else:
-			o_1nonfluor_tot = 0
+			nonfluor_tot = 0
+
+		if any(rslt_df.randGFP2 == 1):
+			x = rslt_df['randGFP2'].value_counts()
+			fluor2_tot = x[1]
+		else:
+			fluor2_tot = 0
 
 		if any(rslt_df.randGFP2 == 2):
-			x = df['randGFP2'].value_counts()
-			o_2nonfluor_tot = x[2]
+			x = rslt_df['randGFP2'].value_counts()
+			nonfluor2_tot = x[2]
 		else:
-			o_2nonfluor_tot = 0
-
-		if any(rslt_df.randGFP3 == 2):
-			x = df['randGFP3'].value_counts()
-			o_3nonfluor_tot = x[2]
-		else:
-			o_3nonfluor_tot = 0
-
-		if any(rslt_df.randGFP4 == 2):
-			x = df['randGFP4'].value_counts()
-			o_4nonfluor_tot = x[2]
-		else:
-			o_4nonfluor_tot = 0
-
-		if any(rslt_df.randGFP5 == 2):
-			x = df['randGFP5'].value_counts()
-			o_5nonfluor_tot = x[2]
-		else:
-			o_5nonfluor_tot = 0
+			nonfluor2_tot = 0
 
 		#creating list with variables we just calculated
-		data = [[filename, steps, window_start, window_end, kernel_tot, o_1fluor_tot, o_2fluor_tot, o_3fluor_tot, o_4fluor_tot, o_5fluor_tot, o_1nonfluor_tot, o_2nonfluor_tot, o_3nonfluor_tot, o_4nonfluor_tot, o_5nonfluor_tot]]
+		data = [[filename, steps, window_start, window_end, kernel_tot, fluor_tot, nonfluor_tot, fluor2_tot, nonfluor2_tot]]
 
 		#putting list into dataframe (which is just 1 row)
 		data_df = pd.DataFrame(data=data,
-							   columns='File Step_Size Window_Start Window_End Total_Kernels Fluor1 Fluor2 Fluor3 Fluor4 Fluor5 NonFluor1 NonFluor2 NonFluor3 NonFluor4 NonFluor5'.split())
+							   columns='File Step_Size Window_Start Window_End Total_Kernels Total_Fluor Total_NonFluor Fluor2 Nonfluor2'.split())
 
 		#appending data_df to kern_count_df (1 row added each time)
 		kern_count_df = kern_count_df.append(data_df)
@@ -473,9 +323,9 @@ def transmission_scatter ( kern_count_df, xml ):
 
 	#create directory to save plots
 	script_dir = os.path.dirname(__file__)
-	results_dir = os.path.join(script_dir, 'Model_Transmission_plots/')
+	results_dir = os.path.join(script_dir, 'Transmission_plots/')
 	#sample_file_name
-	sample_file_name = xml[:-4]+'_model.png'
+	sample_file_name = xml[:-4]+'.png'
 
 	if not os.path.isdir(results_dir):
 		os.makedirs(results_dir)
@@ -491,71 +341,38 @@ def chisquare_test ( kern_count_df ):
 
 	index = 0
 	end_index = kern_count_df.index[-1]
-	temp_df = pd.DataFrame(columns='P-Value1 Comparison1 P-Value2 Comparison2 P-Value3 Comparison3 P-Value4 Comparison4 P-Value5 Comparison5'.split())
+	temp_df = pd.DataFrame(columns='P-Value Comparison P2-Value Comparison2'.split())
 
 	while index <= end_index:
 
 		single_row = kern_count_df.iloc[[index]]
-		single_row = single_row.loc[:, 'Total_Kernels':'NonFluor5']
+		single_row = single_row.loc[:, 'Total_Kernels':'Nonfluor2']
 
 		expected = single_row['Total_Kernels'].values[0] * 0.5
-		fluor1 = single_row['Fluor1'].values[0]
-		nonfluor1 = single_row['NonFluor1'].values[0]
+		fluor = single_row['Total_Fluor'].values[0]
+		nonfluor = single_row['Total_NonFluor'].values[0]
 
-		chi_1stat = stats.chisquare([fluor1, nonfluor1], [expected, expected])
-		pval1 = chi_1stat[1]
+		chi_stat = stats.chisquare([fluor, nonfluor], [expected, expected])
+		pval = chi_stat[1]
 
-		if pval1 <= 0.05:
-			p_1input = '< p = 0.05'
+		if pval <= 0.05:
+			p_input = '< p = 0.05'
 		else:
-			p_1input = '> p = 0.05'
+			p_input = '> p = 0.05'
 
 		fluor2 = single_row['Fluor2'].values[0]
-		nonfluor2 = single_row['NonFluor2'].values[0]
+		nonfluor2 = single_row['Nonfluor2'].values[0]
 
-		chi_2stat = stats.chisquare([fluor2, nonfluor2], [expected, expected])
-		pval2 = chi_2stat[1]
+		chi2_stat = stats.chisquare([fluor2, nonfluor2], [expected, expected])
+		pval2 = chi2_stat[1]
 
 		if pval2 <= 0.05:
-			p_2input = '< p = 0.05'
+			p2_input = '< p = 0.05'
 		else:
-			p_2input = '> p = 0.05'
+			p2_input = '> p = 0.05'
 
-		fluor3 = single_row['Fluor3'].values[0]
-		nonfluor3 = single_row['NonFluor3'].values[0]
-
-		chi_3stat = stats.chisquare([fluor3, nonfluor3], [expected, expected])
-		pval3 = chi_3stat[1]
-
-		if pval3 <= 0.05:
-			p_3input = '< p = 0.05'
-		else:
-			p_3input = '> p = 0.05'
-
-		fluor4 = single_row['Fluor4'].values[0]
-		nonfluor4 = single_row['NonFluor4'].values[0]
-
-		chi_4stat = stats.chisquare([fluor4, nonfluor4], [expected, expected])
-		pval4 = chi_4stat[1]
-
-		if pval4 <= 0.05:
-			p_4input = '< p = 0.05'
-		else:
-			p_4input = '> p = 0.05'
-
-		fluor5 = single_row['Fluor5'].values[0]
-		nonfluor5 = single_row['NonFluor5'].values[0]
-
-		chi_5stat = stats.chisquare([fluor5, nonfluor5], [expected, expected])
-		pval5 = chi_5stat[1]
-
-		if pval5 <= 0.05:
-			p_5input = '< p = 0.05'
-		else:
-			p_5input = '> p = 0.05'
-
-		data = [[pval1, p_1input, pval2, p_2input, pval3, p_3input, pval4, p_4input, pval5, p_5input]]
-		data_df = pd.DataFrame(data=data, columns='P-Value1 Comparison1 P-Value2 Comparison2 P-Value3 Comparison3 P-Value4 Comparison4 P-Value5 Comparison5'.split())
+		data = [[pval, p_input, pval2, p2_input]]
+		data_df = pd.DataFrame(data=data, columns='P-Value Comparison P2-Value Comparison2'.split())
 		temp_df = temp_df.append(data_df)
 
 		index = index + 1
@@ -571,38 +388,19 @@ def pval_plot( final_df, xml):
 	col = final_df.loc[:, "Window_Start":"Window_End"]
 	final_df['window_mean'] = col.mean(axis=1)
 
-	final_df['Percent_1Transmission'] = final_df['Fluor1'] / final_df['Total_Kernels']
-	final_df['Percent_2Transmission'] = final_df['Fluor2'] / final_df['Total_Kernels']
-	final_df['Percent_3Transmission'] = final_df['Fluor3'] / final_df['Total_Kernels']
-	final_df['Percent_4Transmission'] = final_df['Fluor4'] / final_df['Total_Kernels']
-	final_df['Percent_5Transmission'] = final_df['Fluor5'] / final_df['Total_Kernels']
-
+	final_df['Percent_Transmission'] = final_df['Total_Fluor'] / final_df['Total_Kernels']
+	final_df['Percent_Transmission2'] = final_df['Fluor2'] / final_df['Total_Kernels']
 	end_index = final_df.index[-1]
 
 	reg_x = final_df['window_mean'].values
-	reg_1y = final_df['Percent_1Transmission'].values
-	reg_2y = final_df['Percent_2Transmission'].values
-	reg_3y = final_df['Percent_3Transmission'].values
-	reg_4y = final_df['Percent_4Transmission'].values
-	reg_5y = final_df['Percent_5Transmission'].values
+	reg_y = final_df['Percent_Transmission'].values
+	slope, intercept, r_value, p_value, std_err = stats.linregress(reg_x, reg_y)
 
-	slope1, intercept1, r_value1, p_value1, std_err1 = stats.linregress(reg_x, reg_1y)
-	slope2, intercept2, r_value2, p_value2, std_err2 = stats.linregress(reg_x, reg_2y)
-	slope3, intercept3, r_value3, p_value3, std_err3 = stats.linregress(reg_x, reg_3y)
-	slope4, intercept4, r_value4, p_value4, std_err4 = stats.linregress(reg_x, reg_4y)
-	slope5, intercept5, r_value5, p_value5, std_err5 = stats.linregress(reg_x, reg_5y)
-
-	rsq1 = r_value1 ** 2
-	rsq2 = r_value2 ** 2
-	rsq3 = r_value3 ** 2
-	rsq4 = r_value4 ** 2
-	rsq5 = r_value5 ** 2
-
-	segments1 = []
-	colors = np.zeros(shape=(end_index, 4))
+	segments = []
+	colors = np.zeros(shape=(end_index * 2, 4))
 	x = final_df['window_mean'].values
-	y = final_df['Percent_1Transmission'].values
-	z = final_df['P-Value1'].values
+	y = final_df['Percent_Transmission'].values
+	z = final_df['P-Value'].values
 	i = 0
 
 	for x1, x2, y1, y2, z1, z2 in zip(x, x[1:], y, y[1:], z, z[1:]):
@@ -612,152 +410,59 @@ def pval_plot( final_df, xml):
 			colors[i] = tuple([0, 0, 1, 1])
 		else:
 			colors[i] = tuple([0, 1, 0, 1])
-		segments1.append([(x1, y1), (x2, y2)])
+		segments.append([(x1, y1), (x2, y2)])
 		i += 1
-
-	lc1 = mc.LineCollection(segments1, colors=colors, linewidths=2)
+	print(len(segments))
 
 	segments2 = []
-	colors = np.zeros(shape=(end_index, 4))
-	x = final_df['window_mean'].values
-	yy = final_df['Percent_2Transmission'].values
-	zz = final_df['P-Value2'].values
+	colors2 = np.zeros(shape=(end_index * 2, 4))
+	second_y = final_df['Percent_Transmission2'].values
+	second_z = final_df['P2-Value'].values
 	i = 0
 
-	for x1, x2, y1, y2, z1, z2 in zip(x, x[1:], yy, yy[1:], zz, zz[1:]):
-		if z1 > 0.05:
-			colors[i] = tuple([1, 0, 0, 1])
-		elif z1 <= 0.05:
-			colors[i] = tuple([0, 0, 1, 1])
+	for x3, x4, y3, y4, z3, z4 in zip(x, x[1:], second_y, second_y[1:], second_z, second_z[1:]):
+		if z3 > 0.05:
+			colors2[i] = tuple([1, 0, 0, 1])
+		elif z3 <= 0.05:
+			colors2[i] = tuple([0, 0, 1, 1])
 		else:
-			colors[i] = tuple([0, 1, 0, 1])
-		segments2.append([(x1, y1), (x2, y2)])
+			colors2[i] = tuple([0, 1, 0, 1])
+		segments2.append([(x3, y4), (x3, y4)])
 		i += 1
 
-	lc2 = mc.LineCollection(segments2, colors=colors, linewidths=2)
-
-	segments3 = []
-	colors = np.zeros(shape=(end_index, 4))
-	x = final_df['window_mean'].values
-	yyy = final_df['Percent_3Transmission'].values
-	zzz = final_df['P-Value3'].values
-	i = 0
-
-	for x1, x2, y1, y2, z1, z2 in zip(x, x[1:], yyy, yyy[1:], zzz, zzz[1:]):
-		if z1 > 0.05:
-			colors[i] = tuple([1, 0, 0, 1])
-		elif z1 <= 0.05:
-			colors[i] = tuple([0, 0, 1, 1])
-		else:
-			colors[i] = tuple([0, 1, 0, 1])
-		segments3.append([(x1, y1), (x2, y2)])
-		i += 1
-
-	lc3 = mc.LineCollection(segments3, colors=colors, linewidths=2)
-
-	segments4 = []
-	colors = np.zeros(shape=(end_index, 4))
-	x = final_df['window_mean'].values
-	yyyy = final_df['Percent_4Transmission'].values
-	zzzz = final_df['P-Value4'].values
-	i = 0
-
-	for x1, x2, y1, y2, z1, z2 in zip(x, x[1:], yyyy, yyyy[1:], zzzz, zzzz[1:]):
-		if z1 > 0.05:
-			colors[i] = tuple([1, 0, 0, 1])
-		elif z1 <= 0.05:
-			colors[i] = tuple([0, 0, 1, 1])
-		else:
-			colors[i] = tuple([0, 1, 0, 1])
-		segments4.append([(x1, y1), (x2, y2)])
-		i += 1
-
-	lc4 = mc.LineCollection(segments4, colors=colors, linewidths=2)
-
-	segments5 = []
-	colors = np.zeros(shape=(end_index, 4))
-	x = final_df['window_mean'].values
-	yyyyy = final_df['Percent_5Transmission'].values
-	zzzzz = final_df['P-Value5'].values
-	i = 0
-
-	for x1, x2, y1, y2, z1, z2 in zip(x, x[1:], yyyyy, yyyyy[1:], zzzzz, zzzzz[1:]):
-		if z1 > 0.05:
-			colors[i] = tuple([1, 0, 0, 1])
-		elif z1 <= 0.05:
-			colors[i] = tuple([0, 0, 1, 1])
-		else:
-			colors[i] = tuple([0, 1, 0, 1])
-		segments5.append([(x1, y1), (x2, y2)])
-		i += 1
-
-	lc5 = mc.LineCollection(segments5, colors=colors, linewidths=2)
-
+	print(len(segments))
+	lc = mc.LineCollection(segments, colors=colors, linewidths=2)
+	lc2 = mc.LineCollection(segments2, colors=colors2, linewidths=2)
 	fig, ax = pl.subplots(figsize=(11.7,8.27))
-	ax.add_collection(lc1)
-	ax.add_collection(lc2)
-	ax.add_collection(lc3)
-	ax.add_collection(lc4)
-	ax.add_collection(lc5)
-	ax.autoscale()
-	ax.margins(0.1)
-	plt.plot(reg_x, intercept1 + slope1 * reg_x, 'r', color='black', linewidth=3, dashes=[5, 3])
-	plt.plot(reg_x, intercept2 + slope2 * reg_x, 'r', color='black', linewidth=3, dashes=[5, 3])
-	plt.plot(reg_x, intercept3 + slope3 * reg_x, 'r', color='black', linewidth=3, dashes=[5, 3])
-	plt.plot(reg_x, intercept4 + slope4 * reg_x, 'r', color='black', linewidth=3, dashes=[5, 3])
-	plt.plot(reg_x, intercept5 + slope5 * reg_x, 'r', color='black', linewidth=3, dashes=[5, 3])
+	thing = ax.add_collection(lc)
+	thing = ax.add_collection(lc2)
+	thing = ax.autoscale()
+	thing = ax.margins(0.1)
+	plt.plot(reg_x, intercept + slope * reg_x, 'r', label='fitted line', color='black', linewidth=3, dashes=[5, 3])
 
-	ax.set_xlim(np.min(x)-50, np.max(x)+50)
-	ax.set_ylim(0, 1)
+	thing = ax.set_xlim(np.min(x)-50, np.max(x)+50)
+	thing = ax.set_ylim(0, 1)
 	plt.yticks(np.arange(0, 1, step=0.25))
 	plt.figure(figsize=(11.7, 8.27))
 
 
-	ax.set_title(xml[:-4]+' Model Plot', fontsize=30, fontweight='bold')
-	ax.set_xlabel('Window Position (pixels)', fontsize=20, fontweight='bold')
-	ax.set_ylabel('% GFP', fontsize=20, fontweight='bold')
+	thing = ax.set_title(xml[:-4]+' Model Plot', fontsize=30, fontweight='bold')
+	thing = ax.set_xlabel('Window Position (pixels)', fontsize=20, fontweight='bold')
+	thing = ax.set_ylabel('% GFP', fontsize=20, fontweight='bold')
 
-	ax.set_facecolor('white')
-	ax.yaxis.grid(color='grey')
+	thing = ax.set_facecolor('white')
+	thing = ax.yaxis.grid(color='grey')
 
-	ax.spines['bottom'].set_color('black')
-	ax.spines['top'].set_color('black')
-	ax.spines['right'].set_color('black')
-	ax.spines['left'].set_color('black')
+	thing = ax.spines['bottom'].set_color('black')
+	thing = ax.spines['top'].set_color('black')
+	thing = ax.spines['right'].set_color('black')
+	thing = ax.spines['left'].set_color('black')
 
 	red_patch = mpatches.Patch(color='red', label='> p = 0.05')
 	blue_patch = mpatches.Patch(color='blue', label='< p = 0.05')
-	ax.legend(handles=[red_patch, blue_patch], loc='center left', bbox_to_anchor=(1, 0.5))
-	#
-	# num_weird_trans = len(final_df[final_df['Comparison'] == '< p = 0.05'])
-	# num_tkern = int(len(final_df))
-	#
-	# window_stat = num_weird_trans / num_tkern
-	# window_stat = round(window_stat, 3)
-	#
-	# overall_kernel_total = round(overall_kernel_total, 3)
-	# overall_perc_trans = round(overall_perc_trans, 3)
-	# overall_pval = '{:0.3e}'.format(overall_pval)
-	# slope = round(slope, 5)
-	# intercept = round(intercept, 3)
-	# rsq = round(rsq, 3)
-	# p_value = '{:0.3e}'.format(p_value)
-	#
-	#
-	#
-	# textstr = '\n'.join((f'Overall Total Kernels = {overall_kernel_total}',
-	# 					 f'Overall Percent Transmission = {overall_perc_trans}',
-	# 					 f'Overall ChiSquared P-Value = {overall_pval}',
-	# 					 f'% Windows not 0.5 Transmission = {window_stat}',
-	# 					 f'Regression Slope = {slope}',
-	# 					 f'Regression Intercept = {intercept}',
-	# 					 f'Regression R-squared = {rsq}',
-	# 					 f'Regression P-Value = {p_value}'))
-	#
-	# ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=12, fontweight='bold',
-	# 		verticalalignment='top', bbox={'facecolor':'white', 'alpha':1, 'pad':10, 'edgecolor':'black'})
+	thing = ax.legend(handles=[red_patch, blue_patch], loc='center left', bbox_to_anchor=(1, 0.5))
 
-	pv_plot = lc5.get_figure()
+	pv_plot = thing.get_figure()
 
 	# create directory to save plots
 	script_dir = os.path.dirname(__file__)
@@ -771,26 +476,16 @@ def pval_plot( final_df, xml):
 	pv_plot.savefig(results_dir + sample_file_name, bbox_inches="tight")
 	plt.close()
 
-
 # Creating temporary dataframe that will append to the meta df in main
 
 	total_kernels = len(final_df.index)
-	total_1fluor = final_df['Fluor1'].sum()
-	total_2fluor = final_df['Fluor2'].sum()
-	total_3fluor = final_df['Fluor3'].sum()
-	total_4fluor = final_df['Fluor4'].sum()
-	total_5fluor = final_df['Fluor5'].sum()
+	total_fluor = final_df['Total_Fluor'].sum()
+	perc_trans = total_fluor/total_kernels
 
-	perc_1trans = total_1fluor/total_kernels
-	perc_2trans = total_2fluor / total_kernels
-	perc_3trans = total_3fluor / total_kernels
-	perc_4trans = total_4fluor / total_kernels
-	perc_5trans = total_5fluor / total_kernels
-
-	all_data = [[xml[:-4], total_kernels, perc_1trans, rsq1, p_value1, slope1, perc_2trans, rsq2, p_value2, slope2, perc_3trans, rsq3, p_value3, slope3, perc_4trans, rsq4, p_value4, slope4, perc_5trans, rsq5, p_value5, slope5]]
+	all_data = [[xml[:-4], total_kernels, perc_trans, r_value ** 2, p_value, slope]]
 
 	# putting list into dataframe (which is just 1 row)
-	data_df = pd.DataFrame(data=all_data, columns='File_Name Total_Kernels Percent_Transmission1 R-Squared1 P-Value1 Slope1 Percent_Transmission2 R-Squared2 P-Value2 Slope2 Percent_Transmission3 R-Squared3 P-Value3 Slope3 Percent_Transmission4 R-Squared4 P-Value4 Slope4 Percent_Transmission5 R-Squared5 P-Value5 Slope5'.split())
+	data_df = pd.DataFrame(data=all_data, columns='File_Name Total_Kernels Percent_Transmission R-Squared P-Value Slope'.split())
 
 	return pv_plot, data_df
 
@@ -802,7 +497,7 @@ def pval_plot( final_df, xml):
 # # if - allows you to input xml file as first argument
 # # # else - allows you to input directory of xml files as argument
 def main():
-	meta_df = pd.DataFrame(columns='File_Name Total_Kernels Percent_Transmission1 R-Squared1 P-Value1 Slope1 Percent_Transmission2 R-Squared2 P-Value2 Slope2 Percent_Transmission3 R-Squared3 P-Value3 Slope3 Percent_Transmission4 R-Squared4 P-Value4 Slope4 Percent_Transmission5 R-Squared5 P-Value5 Slope5'.split())
+	meta_df = pd.DataFrame(columns='File_Name Total_Kernels Percent_Transmission R-Squared P-Value Slope'.split())
 	everything_df = pd.DataFrame(columns='File Step_Size Window_Start Window_End Total_Kernels Total_Fluor Total_NonFluor P-Value Comparison window_mean Percent_Transmission'.split())
 
 	if args.xml.endswith(".xml"):
@@ -811,15 +506,15 @@ def main():
 			sys.exit('Program Exit')
 		# check xml error fun
 		print(f'Processing {args.xml}...')
-		dataframe, overall_1kernel_total, overall_1perc_trans, overall_1pval, overall_2kernel_total, overall_2perc_trans, overall_2pval, overall_3kernel_total, overall_3perc_trans, overall_3pval, overall_4kernel_total, overall_4perc_trans, overall_4pval, overall_5kernel_total, overall_5perc_trans, overall_5pval = parse_xml(args.xml, tree)
+		dataframe = parse_xml(args.xml, tree)
 		dataframe2, ans1, ans2, ans3 = sliding_window(dataframe, args.width, args.step_size, args.xml)
 		if (ans1 == 'True') or (ans2 == 'True') or (ans3 == 'True'):
 			sys.exit('Program Exit')
 		chi_df = chisquare_test(dataframe2)
-		trans_plot, end_df = pval_plot(chi_df, args.xml, overall_1kernel_total, overall_1perc_trans, overall_1pval, overall_2kernel_total, overall_2perc_trans, overall_2pval, overall_3kernel_total, overall_3perc_trans, overall_3pval, overall_4kernel_total, overall_4perc_trans, overall_4pval, overall_5kernel_total, overall_5perc_trans, overall_5pval)
+		trans_plot, end_df = pval_plot(chi_df, args.xml)
 		meta_df = meta_df.append(end_df)
 		meta_df = meta_df.reset_index(drop=True)
-		# meta_df.to_csv('meta_df.txt', sep='\t')
+	# meta_df.to_csv('meta_df.txt', sep='\t')
 
 	else:
 		for roots, dirs, files in os.walk(args.xml):
@@ -843,8 +538,8 @@ def main():
 						meta_df = meta_df.append(end_df)
 						meta_df = meta_df.reset_index(drop=True)
 
-	everything_df.to_csv('model_everything_df.txt', sep='\t')
-	meta_df.to_csv('model_meta_df.txt', sep='\t')
+	everything_df.to_csv('everything_df.txt', sep='\t')
+	meta_df.to_csv('meta_df.txt', sep='\t')
 	print('Process Complete!')
 
 
