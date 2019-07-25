@@ -1,12 +1,12 @@
 #!/usr/local/bin/python3
 
-#This script contains functions to extract XML kernel coordinates and put them into a dataframe
-#Next coordinates are plotted on a scatter plot to show the fluorescent and nonfluorescent kernel locations
-#Finally, Sliding_Window function generates a new dataframe based on desired width and steps of window
-# # and generates a plot comparing perecent transmission across different windows on the ear
+# This script contains functions to extract XML kernel coordinates and put them into a dataframe
+# Next coordinates are plotted on a scatter plot to show the fluorescent and nonfluorescent kernel locations
+# Finally, Sliding_Window function generates a new dataframe based on desired width and steps of window
+# and generates a plot comparing perecent transmission across different windows on the ear
 
-# # # Input arguments are an XML file, width, and steps
-# # # # Output is a scatter plot saved to a folder containing 'XML_filename'.png
+# Input arguments are an XML file, width, and steps
+# Output is a scatter plot saved to a folder containing 'XML_filename'.png
 
 import sys
 import os
@@ -14,20 +14,15 @@ import numpy as np
 import argparse
 import xml.etree.ElementTree as ET
 import pandas as pd
-from pandas import Series, DataFrame
-
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
-from matplotlib.collections import LineCollection
-from matplotlib.colors import ListedColormap, BoundaryNorm
 import seaborn as sns
-from pylab import rcParams
 from scipy import stats
 import pylab as pl
-from matplotlib import collections  as mc
+from matplotlib import collections as mc
 
 
-#setting up argparse arguments
+# Setting up argparse arguments
 parser = argparse.ArgumentParser(description='Given XML file, width, and steps, returns scatterplot')
 parser.add_argument('xml', metavar='', help='Input XML filename.', type=str)
 parser.add_argument('width', metavar='', help='Width in pixels for the length of the window.', type=int)
@@ -35,7 +30,7 @@ parser.add_argument('step_size', metavar='', help='Steps in pixels for window mo
 args = parser.parse_args()
 
 
-def check_xml_error( input_xml ):
+def check_xml_error(input_xml):
 	# Make element tree for object
 	tree = ET.parse(input_xml)
 
@@ -43,10 +38,10 @@ def check_xml_error( input_xml ):
 	root = tree.getroot()
 
 	# Pulling out the name of the image
-	image_name_string = (root[0][0].text)
+	image_name_string = root[0][0].text
 
 	# Assigning types other than fluorescent and nonfluor in order to
-	# # exit program if list is present
+	# Exit program if list is present
 	try:
 		root_4 = root[1][4]
 		count_4 = len(list(root_4))
@@ -68,14 +63,12 @@ def check_xml_error( input_xml ):
 		print('No root 6 in this file')
 		count_6 = 0
 
-
 	try:
 		root_7 = root[1][7]
 		count_7 = len(list(root_7))
 	except IndexError:
 		print('No root 7 in this file')
 		count_7 = 0
-
 
 	try:
 		root_8 = root[1][8]
@@ -84,8 +77,7 @@ def check_xml_error( input_xml ):
 		print('No root 8 in this file')
 		count_8 = 0
 
-
-	# #checking if anything exists in other types
+	# Checking if anything exists in other types
 	if (count_4 > 1) or (count_5 > 1) or (count_6> 1) or (count_7 > 1) or (count_8 > 1):
 		print(f'ERROR: {image_name_string} skipped...contains unknown type.')
 		result = 'True'
@@ -97,9 +89,6 @@ def check_xml_error( input_xml ):
 
 
 def parse_xml(input_xml, tree):
-	# Make element tree for object
-	#tree = ET.parse(input_xml)
-
 	# Getting the root of the tree
 	root = tree.getroot()
 
@@ -116,19 +105,19 @@ def parse_xml(input_xml, tree):
 	nonfluor_x = []
 	nonfluor_y = []
 
-	# # Getting the coordinates of the fluorescent kernels
+	# Getting the coordinates of the fluorescent kernels
 	for child in fluorescent:
 		if child.tag == 'Marker':
 			fluor_x.append(child.find('MarkerX').text)
 			fluor_y.append(child.find('MarkerY').text)
 
-	# # Getting the coordinates of the non-fluorescent kernels
+	# Getting the coordinates of the non-fluorescent kernels
 	for child in nonfluorescent:
 		if child.tag == 'Marker':
 			nonfluor_x.append(child.find('MarkerX').text)
 			nonfluor_y.append(child.find('MarkerY').text)
 
-	# # Creating the repeating 'type' column values
+	# Creating the repeating 'type' column values
 	fluor_type = 'Fluorescent'
 	nonfluor_type = 'Non-Fluorescent'
 
@@ -137,15 +126,15 @@ def parse_xml(input_xml, tree):
 	nonfluor_coord = np.column_stack(
 		([image_name_string] * len(nonfluor_x), [nonfluor_type] * len(nonfluor_x), nonfluor_x, nonfluor_y))
 
-	# # Stacking the fluor and nonfluor arrays on top of eachother
+	# Stacking the fluor and nonfluor arrays on top of eachother
 	combined_array = np.vstack((fluor_coord, nonfluor_coord))
 
-	# #Importing np.array into pandas dataframe and converting coordinate values from objects to integers
+	# Importing np.array into pandas dataframe and converting coordinate values from objects to integers
 	df = pd.DataFrame(data=combined_array, columns='File Type X-Coordinate Y-Coordinate'.split())
 	df['X-Coordinate'] = df['X-Coordinate'].astype(np.int64)
 	df['Y-Coordinate'] = df['Y-Coordinate'].astype(np.int64)
 
-	#overall ear stats
+	# Overall ear stats
 	overall_kernel_total = int(len(df.index))
 	overall_expected = overall_kernel_total * 0.5
 
@@ -169,52 +158,50 @@ def parse_xml(input_xml, tree):
 
 	return df, overall_kernel_total, overall_perc_trans, overall_pval
 
-
-# # End of function
-
 # Generating plot of coordinate values on ear of fluor and nonfluor
-#def make_scatter(df):
-	#sns.set(rc={'figure.figsize': (9, 2.5)})
-	#ax = sns.scatterplot("X-Coordinate", "Y-Coordinate", hue="Type", data=df, palette='Set1')
-	#handles, labels = ax.get_legend_handles_labels()
-	#l = plt.legend(handles[0:2], labels[0:2], bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
-	#ax.legend(loc='center left', bbox_to_anchor=(1.25, 0.5), ncol=1)
-	#plt.axis('equal')
-	#figure = ax.get_figure()
-	# figure.savefig("coord_plot.png")
-	# my_plot = plt.show()
+def make_scatter(df):
+	sns.set(rc={'figure.figsize': (9, 2.5)})
+	ax = sns.scatterplot("X-Coordinate", "Y-Coordinate", hue="Type", data=df, palette='Set1')
+	handles, labels = ax.get_legend_handles_labels()
+	l = plt.legend(handles[0:2], labels[0:2], bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+	ax.legend(loc='center left', bbox_to_anchor=(1.25, 0.5), ncol=1)
+	plt.axis('equal')
+	figure = ax.get_figure()
+	figure.savefig("coord_plot.png")
+	my_plot = plt.show()
 
-	#return figure
+	return figure
 
-
+# Creates sliding parameter to count total kernels, fluor, and nonfluor on ear as you move across
+# left to right. User inputs the desired window length and step size.
 def sliding_window(df, w, s, filename):
-	# # sort x values from small to big
+	# sort x values from small to big
 	df.sort_values(by=['X-Coordinate'], inplace=True)
 	df = df.reset_index(drop=True)
 
-	# #Choosing starting point for window with value for x
+	# Choosing starting point for window with value for x
 	start_x = df["X-Coordinate"].head(1)
 	int_start_x = int(start_x)
 
-	# # setting up w and s as integers
+	# Setting up w and s as integers
 	int_w = int(w)
 	int_s = int(s)
 
-	# #Defining end of window
+	# Defining end of window
 	end_x = int_start_x + int_w
 
-	# #Defining steps for window
+	# Defining steps for window
 	steps = int_s
 
-	# # creating empty dataframe
+	# Creating empty dataframe
 	kern_count_df = pd.DataFrame(
 		columns='File Step_Size Window_Start Window_End Total_Kernels Total_Fluor Total_NonFluor'.split())
 
-	#Assigning variable to final x coordinate in dataframe
+	# Assigning variable to final x coordinate in dataframe
 	final_x_coord = df["X-Coordinate"].tail(1)
 	int_fxc = int(final_x_coord)
 
-	# # Creating error messages for too small or too big input width or steps
+	# Creating error messages for too small or too big input width or steps
 	adj_step_fxc = int_fxc * 0.25
 
 	if (end_x >= int_fxc):
@@ -229,17 +216,17 @@ def sliding_window(df, w, s, filename):
 	else:
 		ans2 = 'False'
 
-	# # Beginning of sliding window to scan ear and output new dataframe called kern_count_df
+	# Beginning of sliding window to scan ear and output new dataframe called kern_count_df
 	while end_x <= int_fxc:
 
-		#Creating smaller window df based on original df
+		# Creating smaller window df based on original df
 		rslt_df = df[(df['X-Coordinate'] >= int_start_x) & (df['X-Coordinate'] <= end_x)]
 
-		#Total kernels in window
+		# Total kernels in window
 		kernel_tot = len(rslt_df.index)
 
 
-		#Error message if there are no kernels in window
+		# Error message if there are no kernels in window
 		if kernel_tot == 0:
 			print(f'For {filename} - 0 Kernels in Window, please enter larger width value.')
 			ans3 = 'True'
@@ -264,31 +251,32 @@ def sliding_window(df, w, s, filename):
 		else:
 			nonfluor_tot = 0
 
-		#creating list with variables we just calculated
+		# Creating list with variables we just calculated
 		data = [[filename, steps, window_start, window_end, kernel_tot, fluor_tot, nonfluor_tot]]
 
-		#putting list into dataframe (which is just 1 row)
+		# Putting list into dataframe (which is just 1 row)
 		data_df = pd.DataFrame(data=data,
 							   columns='File Step_Size Window_Start Window_End Total_Kernels Total_Fluor Total_NonFluor'.split())
 
-		#appending data_df to kern_count_df (1 row added each time)
+		# Appending data_df to kern_count_df (1 row added each time)
 		kern_count_df = kern_count_df.append(data_df)
 
-		#shifting window based on stepsize
+		# Shifting window based on stepsize
 		int_start_x = int_start_x + steps
 		end_x = end_x + steps
 
-	#resetting index
+	# Resetting index
 	kern_count_df = kern_count_df.reset_index(drop=True)
 	cols = kern_count_df.columns.drop(['File'])
 	kern_count_df[cols] = kern_count_df[cols].apply(pd.to_numeric)
 
+	# Also part of error messages
 	ans3 = 'Neither'
 
 	return kern_count_df, ans1, ans2, ans3
 
-#function for plotting total kernels vs average window position
-def tot_kern_scatter ( kern_count_df ):
+# Function for plotting total kernels vs average window position
+def tot_kern_scatter (kern_count_df):
 	col = kern_count_df.loc[: , "Window_Start":"Window_End"]
 	kern_count_df['window_mean'] = col.mean(axis=1)
 
@@ -299,21 +287,21 @@ def tot_kern_scatter ( kern_count_df ):
 
 	return tot_kern_figure
 
-#function for plotting percent transmission to average window position
-# # plots are saved by file name.png and put into new directory called
-# # # transmission_plots
-def transmission_scatter ( kern_count_df, xml ):
-	# sets parameters for seaborn plots
+# Function for plotting percent transmission to average window position
+# plots are saved by file name.png and put into new directory called
+# transmission_plots
+def transmission_scatter (kern_count_df, xml):
+	# Sets parameters for seaborn plots
 	sns.set_style("white")
 
-	#calculating average window position
+	# Calculating average window position
 	col = kern_count_df.loc[:, "Window_Start":"Window_End"]
 	kern_count_df['window_mean'] = col.mean(axis=1)
 
-	#calculating percent transmission
+	# Calculating percent transmission
 	kern_count_df['Percent_Transmission'] = kern_count_df['Total_Fluor']/kern_count_df['Total_Kernels']
 
-	#creating plot
+	# Creating plot
 	transmission_plot = sns.lineplot(x="window_mean", y="Percent_Transmission", data=kern_count_df, linewidth=5)
 	sns.set(rc={'figure.figsize':(11.7,8.27)})
 	# plt.gcf().subplots_adjust(bottom=0.3)
@@ -330,10 +318,10 @@ def transmission_scatter ( kern_count_df, xml ):
 
 	transmission_figure = transmission_plot.get_figure()
 
-	#create directory to save plots
+	# Create directory to save plots
 	script_dir = os.path.dirname(__file__)
 	results_dir = os.path.join(script_dir, 'Transmission_plots/')
-	#sample_file_name
+	# Sample_file_name
 	sample_file_name = xml[:-4]+'.png'
 
 	if not os.path.isdir(results_dir):
@@ -345,8 +333,9 @@ def transmission_scatter ( kern_count_df, xml ):
 	return transmission_figure
 
 
-
-def chisquare_test ( kern_count_df ):
+# Computes chisquare test on fluor and nonfluor for each window compared to
+# total kernels per window. Dataframe with p-values outputted.
+def chisquare_test (kern_count_df):
 
 	index = 0
 	end_index = kern_count_df.index[-1]
@@ -380,20 +369,30 @@ def chisquare_test ( kern_count_df ):
 
 	return final_df
 
-def pval_plot( final_df, xml, overall_kernel_total, overall_perc_trans, overall_pval):
+# Plots a line for percent transmission across the ear
+# colored based on whether point is abover or below p 0.05
+def pval_plot(final_df, xml, overall_kernel_total, overall_perc_trans, overall_pval):
+	# Hiding error message
 	plt.rcParams.update({'figure.max_open_warning': 0})
 
+	# Creating new column of 'window mean'
 	col = final_df.loc[:, "Window_Start":"Window_End"]
 	final_df['window_mean'] = col.mean(axis=1)
 
+	# Creating new column of percent transmission for each window
 	final_df['Percent_Transmission'] = final_df['Total_Fluor'] / final_df['Total_Kernels']
+
+	# Counting number of rows in dataframe
 	end_index = final_df.index[-1]
 
+	# Calculating regression
 	reg_x = final_df['window_mean'].values
 	reg_y = final_df['Percent_Transmission'].values
 	slope, intercept, r_value, p_value, std_err = stats.linregress(reg_x, reg_y)
 	rsq = r_value ** 2
 
+	# Beginning of plotting... using line collections to plot segments that are
+	# colored based on tuples (red or blue) for p values
 	segments = []
 	colors = np.zeros(shape=(end_index, 4))
 	x = final_df['window_mean'].values
@@ -411,18 +410,22 @@ def pval_plot( final_df, xml, overall_kernel_total, overall_perc_trans, overall_
 		segments.append([(x1, y1), (x2, y2)])
 		i += 1
 
+	# Creating a line by putting segments together
 	lc = mc.LineCollection(segments, colors=colors, linewidths=2)
 	fig, ax = pl.subplots(figsize=(11.7,8.27))
+	# Adding line collection to axis
 	ax.add_collection(lc)
 	ax.autoscale()
 	ax.margins(0.1)
+
+	# Plotting regression line
 	plt.plot(reg_x, intercept + slope * reg_x, 'r', label='fitted line', color='black', linewidth=3, dashes=[5, 3])
 
+	# Settings for graph aesthetics
 	ax.set_xlim(np.min(x)-50, np.max(x)+50)
 	ax.set_ylim(0, 1)
 	plt.yticks(np.arange(0, 1, step=0.25))
 	plt.figure(figsize=(11.7, 8.27))
-
 
 	ax.set_title(xml[:-4]+' Plot', fontsize=30, fontweight='bold')
 	ax.set_xlabel('Window Position (pixels)', fontsize=20, fontweight='bold')
@@ -436,10 +439,12 @@ def pval_plot( final_df, xml, overall_kernel_total, overall_perc_trans, overall_
 	ax.spines['right'].set_color('black')
 	ax.spines['left'].set_color('black')
 
+	# Key to label line colors
 	red_patch = mpatches.Patch(color='red', label='> p = 0.05')
 	blue_patch = mpatches.Patch(color='blue', label='< p = 0.05')
 	ax.legend(handles=[red_patch, blue_patch], loc='center left', bbox_to_anchor=(1, 0.5))
 
+	# Creating a text box with overall stats for each graph
 	num_weird_trans = len(final_df[final_df['Comparison'] == '< p = 0.05'])
 	num_tkern = int(len(final_df))
 
@@ -468,12 +473,13 @@ def pval_plot( final_df, xml, overall_kernel_total, overall_perc_trans, overall_
 	ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=12, fontweight='bold',
 			verticalalignment='top', bbox={'facecolor':'white', 'alpha':1, 'pad':10, 'edgecolor':'black'})
 
+	# Getting the figure for saving etc
 	pv_plot = lc.get_figure()
 
-	# create directory to save plots
+	# Create directory to save plots
 	script_dir = os.path.dirname(__file__)
 	results_dir = os.path.join(script_dir, 'Transmission_plots/')
-	# sample_file_name
+	# Sample_file_name
 	sample_file_name = xml[:-4] + '.png'
 
 	if not os.path.isdir(results_dir):
@@ -490,7 +496,7 @@ def pval_plot( final_df, xml, overall_kernel_total, overall_perc_trans, overall_
 
 	all_data = [[xml[:-4], total_kernels, perc_trans, r_value ** 2, p_value, slope]]
 
-	# putting list into dataframe (which is just 1 row)
+	# Putting list into dataframe (which is just 1 row)
 	data_df = pd.DataFrame(data=all_data, columns='File_Name Total_Kernels Percent_Transmission R-Squared P-Value Slope'.split())
 
 	return pv_plot, data_df
@@ -499,13 +505,16 @@ def pval_plot( final_df, xml, overall_kernel_total, overall_perc_trans, overall_
 
 
 
-#Main function for running the whole script with argparse
-# # if - allows you to input xml file as first argument
-# # # else - allows you to input directory of xml files as argument
+# Main function for running the whole script with argparse
+# if - allows you to input xml file as first argument
+# else - allows you to input directory of xml files as argument
 def main():
+	# Dataframe (saved to .txt file) for each file and their chisquare and regression stats
 	meta_df = pd.DataFrame(columns='File_Name Total_Kernels Percent_Transmission R-Squared P-Value Slope'.split())
+	# Dataframe (saved to .txt file) for each file's name, window_mean, % transmission, pvalue, etc
 	everything_df = pd.DataFrame(columns='File Step_Size Window_Start Window_End Total_Kernels Total_Fluor Total_NonFluor P-Value Comparison window_mean Percent_Transmission'.split())
 
+# Processing single file as argument
 	if args.xml.endswith(".xml"):
 		result, tree = check_xml_error(args.xml)
 		if result == 'True':
@@ -522,6 +531,7 @@ def main():
 		meta_df = meta_df.reset_index(drop=True)
 	# meta_df.to_csv('meta_df.txt', sep='\t')
 
+# Processing directory of xml files
 	else:
 		for roots, dirs, files in os.walk(args.xml):
 			for filename in files:
@@ -544,6 +554,7 @@ def main():
 						meta_df = meta_df.append(end_df)
 						meta_df = meta_df.reset_index(drop=True)
 
+	# Saving dataframes
 	everything_df.to_csv('everything_df.txt', sep='\t')
 	meta_df.to_csv('meta_df.txt', sep='\t')
 	print('Process Complete!')
