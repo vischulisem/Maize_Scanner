@@ -9,14 +9,8 @@ import numpy as np
 import argparse
 import xml.etree.ElementTree as ET
 import pandas as pd
-from pandas import Series, DataFrame
-
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
-from matplotlib.collections import LineCollection
-from matplotlib.colors import ListedColormap, BoundaryNorm
-import seaborn as sns
-from pylab import rcParams
 from scipy import stats
 import pylab as pl
 from matplotlib import collections  as mc
@@ -24,9 +18,10 @@ from matplotlib import collections  as mc
 
 #setting up argparse arguments
 parser = argparse.ArgumentParser(description='Given XML file, width, and steps, returns scatterplot')
-parser.add_argument('xml', metavar='', help='Input XML filename.', type=str)
-parser.add_argument('width', metavar='', help='Width in pixels for the length of the window.', type=int)
-parser.add_argument('step_size', metavar='', help='Steps in pixels for window movement.', type=int)
+parser.add_argument('-x', '--xml', metavar='', help='Input XML filename.', type=str)
+parser.add_argument('-w', '--width', metavar='', help='Width in pixels for the length of the window.', default=400, type=int)
+parser.add_argument('-s', '--step_size', metavar='', help='Steps in pixels for window movement.', default=2, type=int)
+parser.add_argument('-n', action='store_true', help='Will normalize x axis of transmission plots.')
 args = parser.parse_args()
 
 
@@ -537,14 +532,181 @@ def pval_plot( final_df, xml):
 	total_fluor = final_df['Total_Fluor'].sum()
 	perc_trans = total_fluor/total_kernels
 
-	all_data = [[xml[:-4], total_kernels, perc_trans, r_value ** 2, p_value, slope]]
+	all_data = [[xml[:-4], total_kernels, perc_trans, r_value ** 2, p_value, slope, slope2, intercept2, r_value2 ** 2, p_value2, slope3, intercept3, r_value3 ** 2, p_value3, slope4, intercept4, r_value4 ** 4, p_value4, slope5, intercept5, r_value5 ** 2, p_value5]]
 
 	# putting list into dataframe (which is just 1 row)
-	data_df = pd.DataFrame(data=all_data, columns='File_Name Total_Kernels Percent_Transmission R-Squared P-Value Slope'.split())
+	data_df = pd.DataFrame(data=all_data, columns='File_Name Total_Kernels Percent_Transmission R-Squared P-Value Slope slope2 intercept2 r_value2 p_value2 slope3 intercept3 r_value3 p_value3 slope4 intercept4 r_value4 p_value4 slope5 intercept5 r_value5 p_value5'.split())
 
 	return pv_plot, data_df
 
+# Normalizes window mean x values
+def pval_norm_plot( final_df, xml):
+	plt.rcParams.update({'figure.max_open_warning': 0})
 
+	col = final_df.loc[:, "Window_Start":"Window_End"]
+	final_df['window_mean'] = col.mean(axis=1)
+	final_df['Normalized_Window_Mean'] = final_df.groupby('File')['window_mean'].apply(lambda x: (x - x.min()) / (x.max() - x.min()))
+
+	final_df['Percent_Transmission'] = final_df['Total_Fluor'] / final_df['Total_Kernels']
+	final_df['Percent_Transmission2'] = final_df['Fluor2'] / final_df['Total_Kernels']
+	final_df['Percent_Transmission3'] = final_df['Fluor3'] / final_df['Total_Kernels']
+	final_df['Percent_Transmission4'] = final_df['Fluor4'] / final_df['Total_Kernels']
+	final_df['Percent_Transmission5'] = final_df['Fluor5'] / final_df['Total_Kernels']
+
+	end_index = final_df.index[-1]
+
+	reg_x = final_df['Normalized_Window_Mean'].values
+	reg_y = final_df['Percent_Transmission'].values
+	slope, intercept, r_value, p_value, std_err = stats.linregress(reg_x, reg_y)
+
+	reg2_x = final_df['Normalized_Window_Mean'].values
+	reg2_y = final_df['Percent_Transmission2'].values
+	slope2, intercept2, r_value2, p_value2, std_err2 = stats.linregress(reg2_x, reg2_y)
+
+	reg3_x = final_df['Normalized_Window_Mean'].values
+	reg3_y = final_df['Percent_Transmission3'].values
+	slope3, intercept3, r_value3, p_value3, std_err3 = stats.linregress(reg3_x, reg3_y)
+
+	reg4_x = final_df['Normalized_Window_Mean'].values
+	reg4_y = final_df['Percent_Transmission4'].values
+	slope4, intercept4, r_value4, p_value4, std_err4 = stats.linregress(reg4_x, reg4_y)
+
+	reg5_x = final_df['Normalized_Window_Mean'].values
+	reg5_y = final_df['Percent_Transmission5'].values
+	slope5, intercept5, r_value5, p_value5, std_err5 = stats.linregress(reg5_x, reg5_y)
+
+	segments = []
+	colors = np.zeros(shape=(end_index * 5, 4))
+	x = final_df['Normalized_Window_Mean'].values
+	y = final_df['Percent_Transmission'].values
+	z = final_df['P-Value'].values
+	i = 0
+
+	for x1, x2, y1, y2, z1, z2 in zip(x, x[1:], y, y[1:], z, z[1:]):
+		if z1 > 0.05:
+			colors[i] = tuple([1, 0, 0, 1])
+		elif z1 <= 0.05:
+			colors[i] = tuple([0, 0, 1, 1])
+		else:
+			colors[i] = tuple([0, 1, 0, 1])
+		segments.append([(x1, y1), (x2, y2)])
+		i += 1
+
+	second_x = final_df['Normalized_Window_Mean'].values
+	second_y = final_df['Percent_Transmission2'].values
+	second_z = final_df['P2-Value'].values
+
+	for x3, x4, y3, y4, z3, z4 in zip(second_x, second_x[1:], second_y, second_y[1:], second_z, second_z[1:]):
+		if z3 > 0.05:
+			colors[i] = tuple([1, 0, 0, 1])
+		elif z3 <= 0.05:
+			colors[i] = tuple([0, 0, 1, 1])
+		else:
+			colors[i] = tuple([0, 1, 0, 1])
+		segments.append([(x3, y3), (x4, y4)])
+		i += 1
+
+	third_x = final_df['Normalized_Window_Mean'].values
+	third_y = final_df['Percent_Transmission3'].values
+	third_z = final_df['P3-Value'].values
+
+	for x5, x6, y5, y6, z5, z6 in zip(third_x, third_x[1:], third_y, third_y[1:], third_z, third_z[1:]):
+		if z5 > 0.05:
+			colors[i] = tuple([1, 0, 0, 1])
+		elif z5 <= 0.05:
+			colors[i] = tuple([0, 0, 1, 1])
+		else:
+			colors[i] = tuple([0, 1, 0, 1])
+		segments.append([(x5, y5), (x6, y6)])
+		i += 1
+
+	fourth_x = final_df['Normalized_Window_Mean'].values
+	fourth_y = final_df['Percent_Transmission4'].values
+	fourth_z = final_df['P4-Value'].values
+
+	for x7, x8, y7, y8, z7, z8 in zip(fourth_x, fourth_x[1:], fourth_y, fourth_y[1:], fourth_z, fourth_z[1:]):
+		if z7 > 0.05:
+			colors[i] = tuple([1, 0, 0, 1])
+		elif z7 <= 0.05:
+			colors[i] = tuple([0, 0, 1, 1])
+		else:
+			colors[i] = tuple([0, 1, 0, 1])
+		segments.append([(x7, y7), (x8, y8)])
+		i += 1
+
+	fifth_x = final_df['Normalized_Window_Mean'].values
+	fifth_y = final_df['Percent_Transmission5'].values
+	fifth_z = final_df['P5-Value'].values
+
+	for x9, x99, y9, y99, z9, z99 in zip(fifth_x, fifth_x[1:], fifth_y, fifth_y[1:], fifth_z, fifth_z[1:]):
+		if z9 > 0.05:
+			colors[i] = tuple([1, 0, 0, 1])
+		elif z9 <= 0.05:
+			colors[i] = tuple([0, 0, 1, 1])
+		else:
+			colors[i] = tuple([0, 1, 0, 1])
+		segments.append([(x9, y9), (x99, y99)])
+		i += 1
+
+	lc = mc.LineCollection(segments, colors=colors, linewidths=2)
+	fig, ax = pl.subplots(figsize=(11.7,8.27))
+	ax.add_collection(lc)
+	ax.autoscale()
+	ax.margins(0.1)
+	plt.plot(reg_x, intercept + slope * reg_x, 'r', label='fitted line', color='black', linewidth=3, dashes=[5, 3])
+	plt.plot(reg2_x, intercept2 + slope2 * reg2_x, 'r', label='fitted line', color='black', linewidth=3, dashes=[5, 3])
+	plt.plot(reg3_x, intercept3 + slope3 * reg3_x, 'r', label='fitted line', color='black', linewidth=3, dashes=[5, 3])
+	plt.plot(reg4_x, intercept4 + slope4 * reg4_x, 'r', label='fitted line', color='black', linewidth=3, dashes=[5, 3])
+	plt.plot(reg5_x, intercept5 + slope5 * reg5_x, 'r', label='fitted line', color='black', linewidth=3, dashes=[5, 3])
+
+	# ax.set_xlim(np.min(second_x)-50, np.max(second_x)+50)
+	ax.set_ylim(0, 1)
+	plt.yticks(np.arange(0, 1, step=0.25))
+	plt.figure(figsize=(11.7, 8.27))
+
+
+	ax.set_title(xml[:-4]+' Model Plot', fontsize=30, fontweight='bold')
+	ax.set_xlabel('Normalized Window Position (pixels)', fontsize=20, fontweight='bold')
+	ax.set_ylabel('% GFP', fontsize=20, fontweight='bold')
+
+	ax.set_facecolor('white')
+	ax.yaxis.grid(color='grey')
+
+	ax.spines['bottom'].set_color('black')
+	ax.spines['top'].set_color('black')
+	ax.spines['right'].set_color('black')
+	ax.spines['left'].set_color('black')
+
+	red_patch = mpatches.Patch(color='red', label='> p = 0.05')
+	blue_patch = mpatches.Patch(color='blue', label='< p = 0.05')
+	plt.legend(handles=[red_patch, blue_patch], loc='center left', bbox_to_anchor=(1, 0.5))
+
+	pv_plot = lc.get_figure()
+
+	# create directory to save plots
+	script_dir = os.path.dirname(__file__)
+	results_dir = os.path.join(script_dir, 'Model_Norm_Transmission_plots/')
+	# sample_file_name
+	sample_file_name = xml[:-4] + '_model.png'
+
+	if not os.path.isdir(results_dir):
+		os.makedirs(results_dir)
+
+	pv_plot.savefig(results_dir + sample_file_name, bbox_inches="tight")
+	plt.close()
+
+# Creating temporary dataframe that will append to the meta df in main
+
+	total_kernels = len(final_df.index)
+	total_fluor = final_df['Total_Fluor'].sum()
+	perc_trans = total_fluor/total_kernels
+
+	all_data = [[xml[:-4], total_kernels, perc_trans, r_value ** 2, p_value, slope, slope2, intercept2, r_value2 ** 2, p_value2, slope3, intercept3, r_value3 ** 2, p_value3, slope4, intercept4, r_value4 ** 4, p_value4, slope5, intercept5, r_value5 ** 2, p_value5]]
+
+	# putting list into dataframe (which is just 1 row)
+	data_df = pd.DataFrame(data=all_data, columns='File_Name Total_Kernels Percent_Transmission R-Squared P-Value Slope slope2 intercept2 r_value2 p_value2 slope3 intercept3 r_value3 p_value3 slope4 intercept4 r_value4 p_value4 slope5 intercept5 r_value5 p_value5'.split())
+
+	return pv_plot, data_df
 
 
 
@@ -552,8 +714,8 @@ def pval_plot( final_df, xml):
 # # if - allows you to input xml file as first argument
 # # # else - allows you to input directory of xml files as argument
 def main():
-	meta_df = pd.DataFrame(columns='File_Name Total_Kernels Percent_Transmission R-Squared P-Value Slope'.split())
-	everything_df = pd.DataFrame(columns='File Step_Size Window_Start Window_End Total_Kernels Total_Fluor Total_NonFluor Fluor2 Nonfluor2 Fluor3 Nonfluor3 Fluor4 Nonfluor4 Fluor5 Nonfluor5 P-Value Comparison P2-Value Comparison2 P3-Value Comparison3 P4-Value Comparison4 P5-Value Comparison5 window_mean Percent_Transmission Percent_Transmission2 Percent_Transmission3 Percent_Transmission4 Percent_Transmission5'.split())
+	meta_df = pd.DataFrame(columns='File_Name Total_Kernels Percent_Transmission R-Squared P-Value Slope slope2 intercept2 r_value2 p_value2 slope3 intercept3 r_value3 p_value3 slope4 intercept4 r_value4 p_value4 slope5 intercept5 r_value5 p_value5'.split())
+	everything_df = pd.DataFrame(columns='File Step_Size Window_Start Window_End Total_Kernels Total_Fluor Total_NonFluor Fluor2 Nonfluor2 Fluor3 Nonfluor3 Fluor4 Nonfluor4 Fluor5 Nonfluor5 P-Value Comparison P2-Value Comparison2 P3-Value Comparison3 P4-Value Comparison4 P5-Value Comparison5 window_mean Normalized_Window_Mean Percent_Transmission Percent_Transmission2 Percent_Transmission3 Percent_Transmission4 Percent_Transmission5'.split())
 
 	if args.xml.endswith(".xml"):
 		result, tree = check_xml_error(args.xml)
@@ -586,8 +748,10 @@ def main():
 						if (ans1 == 'True') or (ans2 == 'True') or (ans3 == 'True'):
 							continue
 						chi_df = chisquare_test(dataframe2)
-						trans_plot, end_df = pval_plot(chi_df, filename)
-
+						if args.n:
+							trans_plot, end_df = pval_norm_plot(chi_df, filename)
+						else:
+							trans_plot, end_df = pval_plot(chi_df, filename)
 						everything_df = everything_df.append(chi_df)
 						everything_df = everything_df.reset_index(drop=True)
 						meta_df = meta_df.append(end_df)

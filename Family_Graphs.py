@@ -1,6 +1,10 @@
 #!/usr/local/bin/python3
 
-# This script creates family group plots from the saved dataframe in txt file
+# This script creates family group plots from the saved everything_df.txt
+# Creates plot with everything on it
+# Creates plot with everything with male and female in 400s
+# Creates plot with only females in 400s
+# Creates plots saved to new directory of Male family plots with regression lines
 
 import os
 import argparse
@@ -13,8 +17,8 @@ from scipy import stats
 # setting up argparse arguments
 parser = argparse.ArgumentParser(description='Given meta df, start and stop values for male families, returns plots')
 parser.add_argument('-i', '--input_df', metavar='', help='Input meta dataframe filename.', type=str)
-parser.add_argument('-sv', '--start_value', metavar='', help='Starting number for male family plots', type=int)
-parser.add_argument('-ev', '--end_value', metavar='', help='Ending number for male family plots', type=int)
+parser.add_argument('-sv', '--start_value', metavar='', help='Starting number for male family plots, must be in 400s', default=410, type=int)
+parser.add_argument('-ev', '--end_value', metavar='', help='Ending number for male family plots, must be in 400s', default=499, type=int)
 args = parser.parse_args()
 
 # Plots everything in .txt file
@@ -126,7 +130,7 @@ def female_cross_plot(input_df):
 
 	return female_plot
 
-# User can input low and high parameter corresponding to number of male family to plot
+# User can input low and high parameter corresponding to number of 400 male family to plot
 # Files are sorted and grouped together, x coordinates (window mean) normalized for all lines
 def male_fam_plot(input_df, low, high):
 	print(f'Starting male plots...')
@@ -165,6 +169,9 @@ def male_fam_plot(input_df, low, high):
 			plt.plot(reg_x, intercept + slope * reg_x, 'r', label='fitted line', color='red', linewidth=3,
 					 dashes=[5, 3])
 
+			# Creating empty df so that mean rsquared for each line can be displayed
+			stat_df = pd.DataFrame(columns='Slope Intercept RSquared P-Value'.split())
+			# Iterating through each file name and plotting regression line
 			grps = data.groupby(['File'])
 			for file, grp in grps:
 				iter_y = grp['Percent_Transmission']
@@ -172,6 +179,26 @@ def male_fam_plot(input_df, low, high):
 				slope2, intercept2, r_value2, p_value2, std_err2 = stats.linregress(iter_x, iter_y)
 				plt.plot(iter_x, intercept2 + slope2 * iter_x, 'r', label='fitted line', color='black', linewidth=3,
 						 dashes=[5, 3])
+				# Putting regression stats for each file into dataframe
+				this_stat = [[slope2, intercept2, r_value2 ** 2, p_value2]]
+				temp_stat_df = pd.DataFrame(data=this_stat, columns='Slope Intercept RSquared P-Value'.split())
+				stat_df = stat_df.append(temp_stat_df)
+				stat_df = stat_df.reset_index(drop=True)
+
+			# Calculating mean values for each stat and rounding to 4 decimal places
+			average_slope = round(stat_df['Slope'].mean(), 4)
+			average_intercept = round(stat_df['Intercept'].mean(), 4)
+			average_Rsquared = round(stat_df['RSquared'].mean(), 4)
+			average_Pval = '{:0.3e}'.format(stat_df['P-Value'].mean())
+
+			# Text string for text box
+			textstr = '\n'.join((f'Average R-squared = {average_Rsquared}',
+								 f'Average Slope = {average_slope}',
+								 f'Average Intercept = {average_intercept}',
+								 f'Average P-value = {average_Pval}'))
+			# Creating text box on graph
+			male.text(0.05, 0.95, textstr, transform=male.transAxes, fontsize=10, fontweight='bold',
+					verticalalignment='top', bbox={'facecolor': 'white', 'alpha': 1, 'pad': 10, 'edgecolor': 'black'})
 
 			# Saving figure in new directory with cross file name
 			male_graph = male.get_figure()
@@ -192,12 +219,11 @@ def male_fam_plot(input_df, low, high):
 
 	return male_graph
 
-
 def main():
-	# everything_everything_plot = everything_everything_graph(args.input_df)
-	# fourhundred_plot = only400s_plot(args.input_df)
-	# female_plot = female_cross_plot(args.input_df)
-	male_fam_graphs = male_fam_plot(args.input_df, args.start_value, args.end_value)
+	everything_everything_graph(args.input_df)
+	only400s_plot(args.input_df)
+	female_cross_plot(args.input_df)
+	male_fam_plot(args.input_df, args.start_value, args.end_value)
 
 
 if __name__ == '__main__':
