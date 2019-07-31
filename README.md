@@ -13,7 +13,12 @@ XML Analysis:
     Plots positional percent transmission line colored based on whether point is above or below p = 0.05 for chi squared test.
     Also plots and calculates regression.
  
-    This script accepts an xml file or directory of xml files, window width, and step size in pixels as arguments.
+    This script accepts an xml file or directory of xml files, window width, and step size in pixels as arguments. Defaults are set
+    for width and step size. Optional arguments listed:
+    -tk --total_kernels to adjust the minimum number of kernels per entire ear. Default set at 50. Therefore any xml files with 
+    less than 50 kernels per ear are skipped.
+    -n will normalize the X coordinates "window_mean" for all graphs
+    -p --path designates the path to save files. Default is current path.
     Outputs: New directory 'Transmission_plots' containing graphs corresponding to each xml file with positional
     percent transmission for each window, regression, and ear statistics. Also outputs 'meta_df.txt' which contains overall 
     ear stats and p-values. Also outputs 'everything_df.txt' which contains all window calculations and p values for each window for
@@ -30,7 +35,9 @@ XML Analysis:
     regression lines.
     
     This script accepts everything_df.txt, starting value for male family plots (must be in 400s), and ending value for male
-    family plots (must be in 400s). Example) 410 499
+    family plots (must be in 400s). Example) 410 499. Defaults are set for sv and ev. 
+    -n will normalize x coordinates 'window_mean' for all graphs
+    -p will allow you to select path for saving files. Default is current path.
     Outputs are plots saved as .png files. Male faimly plots are saved in new directory 'Male Plots/' with each family as plot 
     name. 
     
@@ -42,6 +49,7 @@ XML Analysis:
     directory with xml file as plot name. 
     
     This script accepts single xml file or directory of xml files as arguments. Outputs scatterplots. 
+    -p will allow you to select path to save files. Default is current path.
     
 Modelling Analysis: 
 
@@ -55,7 +63,12 @@ Modelling Analysis:
     Creates 5 models based on randomly assigning fluor or nonfluor to coordinates. Calculates chi squared statistic for each model.
     Plots positional percent transmission line (colored based on p value) for each model with regression line. 
     
-    This script accepts xml file or directory of xml files, window width, and step size as arguements.
+    This script accepts xml file or directory of xml files, window width, and step size as arguements.Defaults are set
+    for width and step size. Optional arguments listed:
+    -tk --total_kernels to adjust the minimum number of kernels per entire ear. Default set at 50. Therefore any xml files with 
+    less than 50 kernels per ear are skipped.
+    -n will normalize the X coordinates "window_mean" for all graphs
+    -p --path designates the path to save files. Default is current path.
     Outputs new directory 'Model_Transmission_plots/' with each model graph labeled with file name. Also outputs 2 text files to
     become dataframes in later scripts. 'meta_model_df.txt' contains overall ear statistics for each model. 'everything_model_df.txt'
     contains window calculations and chi square statistics for each ear. Again txt files are tab delimited. 
@@ -69,7 +82,9 @@ Modelling Analysis:
     Plots all files with male and female in 400s on scatterplot with regression line. --5 MODELS PER XML FILE
     Plots all females in 400s on scatterplot with regression line. --5 MODELS PER XML FILE
     
-    This script accepts 'everything_model_df.txt' as arguments. Outputs are saved graphs. 
+    This script accepts 'everything_model_df.txt' as arguments. Outputs are saved graphs. Defaults are set for sv and ev. 
+    -n will normalize x coordinates 'window_mean' for all graphs
+    -p will allow you to select path for saving files. Default is current path.
     
    3. Histogram_Model.py
    
