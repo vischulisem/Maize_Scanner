@@ -3,7 +3,9 @@ argument parser.
 Scripts and the order they should be run are outlined below:
 
 XML Analysis: 
+
 1. XML_to_ChiSquareTrasmPlot.py 
+
   What it does:
     Takes xml file, gets X,Y coordinate points for each kernel, and labels as fluorescent or nonfluorescent. 
     Creates sliding window parameter to scan ear counting the number of kernels, fluor, and nonfluor in each window.
@@ -18,6 +20,7 @@ XML Analysis:
     each xml file. .txt files are tab delimited use to reconvert to new pandas dataframe in later scripts. 
     
 2. Family_Graphs.py
+
   What it does: 
     Takes 'everything_df.txt' and creates a variety of plots based on male/female crosses. 
     Plots all xml files on single scatterplot with regression line. 
@@ -32,6 +35,7 @@ XML Analysis:
     name. 
     
   3. Kern_Coord.py
+  
     What it does:
     This script is optional to run and can be run in any order. 
     Takes XML file and plots coordinates of each kernel on plot. Labels kernels whether fluor or nonfluor. Saves plots to new 
@@ -40,10 +44,12 @@ XML Analysis:
     This script accepts single xml file or directory of xml files as arguments. Outputs scatterplots. 
     
 Modelling Analysis: 
+
   This group of scripts must be run in this order. Scripts are similar to those above however this generates 5 different models for
   each xml file. At each kernel coordinate, whether the point is fluorescent or nonfluorescent is randomly assigned. 
   
   1. Model.py
+  
     This script is nearly identicle to XML_to_ChiSquareTrasmPlot.py
     What it does differently:
     Creates 5 models based on randomly assigning fluor or nonfluor to coordinates. Calculates chi squared statistic for each model.
@@ -55,6 +61,7 @@ Modelling Analysis:
     contains window calculations and chi square statistics for each ear. Again txt files are tab delimited. 
   
   2. Fam_MODEL_Graphs.py 
+  
     This script is nearly identicle to Family_Graphs.py
     What it does differently: 
     Creates scatterplots with regression line for each model and overlays them. 
