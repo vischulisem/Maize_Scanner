@@ -335,6 +335,7 @@ def pval_plot(final_df, xml, overall_kernel_total, overall_perc_trans, overall_p
 	# Creating new column of 'window mean'
 	col = final_df.loc[:, "Window_Start":"Window_End"]
 	final_df['window_mean'] = col.mean(axis=1)
+	# Normalizing window mean values for x axis
 	final_df['Normalized_Window_Mean'] = final_df.groupby('File')['window_mean'].apply(lambda x: (x - x.min()) / (x.max() - x.min()))
 
 	# Creating new column of percent transmission for each window
