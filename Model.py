@@ -26,6 +26,7 @@ parser.add_argument('-w', '--width', metavar='', help='Width in pixels for the l
 parser.add_argument('-s', '--step_size', metavar='', help='Steps in pixels for window movement.', default=2, type=int)
 parser.add_argument('-n', action='store_true', help='Will normalize x axis of transmission plots.')
 parser.add_argument('-tk', '--total_kernels', metavar='', help='Determine threshold for total kernels on ear for skipping file.', default=50, type=int)
+parser.add_argument('-p', '--path', metavar='', help='List path where you want files saved to.', default=os.getcwd(), type=str)
 args = parser.parse_args()
 
 # This function checks XML file for types 4-8 and skips if present
@@ -405,7 +406,7 @@ def chisquare_test(kern_count_df):
 # Plots a line for percent transmission across the ear
 # colored based on whether point is above or below p = 0.05
 # No normalization of x axis mean value but Normalized value added to df
-def pval_plot(final_df, xml):
+def pval_plot(final_df, xml, path):
 	# Hiding error message
 	plt.rcParams.update({'figure.max_open_warning': 0})
 	# Creating new column of 'window mean'
@@ -562,8 +563,8 @@ def pval_plot(final_df, xml):
 	pv_plot = lc.get_figure()
 
 	# Create directory to save plots
-	script_dir = os.path.dirname(__file__)
-	results_dir = os.path.join(script_dir, 'Model_Transmission_plots/')
+	script_dir = path
+	results_dir = os.path.join(script_dir, 'Output_Model/Model_Transmission_plots/')
 	# Sample_file_name
 	sample_file_name = xml[:-4] + '_model.png'
 
@@ -588,7 +589,7 @@ def pval_plot(final_df, xml):
 # Plots a line for percent transmission across the ear
 # colored based on whether point is above or below p = 0.05
 # Normalizes window mean x values
-def pval_norm_plot(final_df, xml):
+def pval_norm_plot(final_df, xml, path):
 	# Hiding error message
 	plt.rcParams.update({'figure.max_open_warning': 0})
 	# Creating new column of 'window mean'
@@ -738,8 +739,8 @@ def pval_norm_plot(final_df, xml):
 	pv_plot = lc.get_figure()
 
 	# Create directory to save plots
-	script_dir = os.path.dirname(__file__)
-	results_dir = os.path.join(script_dir, 'Model_Norm_Transmission_plots/')
+	script_dir = path
+	results_dir = os.path.join(script_dir, 'Output_Model/Model_Norm_Transmission_plots/')
 	# Sample_file_name
 	sample_file_name = xml[:-4] + '_model.png'
 
@@ -786,9 +787,9 @@ def main():
 		chi_df = chisquare_test(dataframe2)
 		# If -n present, normalize x coord on plots
 		if args.n:
-			trans_plot, end_df = pval_norm_plot(chi_df, args.xml)
+			trans_plot, end_df = pval_norm_plot(chi_df, args.xml, args.path)
 		else:
-			trans_plot, end_df = pval_plot(chi_df, args.xml)
+			trans_plot, end_df = pval_plot(chi_df, args.xml, args.path)
 		everything_df = everything_df.append(chi_df)
 		everything_df = everything_df.reset_index(drop=True)
 		meta_df = meta_df.append(end_df)
@@ -814,16 +815,18 @@ def main():
 						chi_df = chisquare_test(dataframe2)
 						# If -n present, normalize x coord on plots
 						if args.n:
-							trans_plot, end_df = pval_norm_plot(chi_df, filename)
+							trans_plot, end_df = pval_norm_plot(chi_df, filename, args.path)
 						else:
-							trans_plot, end_df = pval_plot(chi_df, filename)
+							trans_plot, end_df = pval_plot(chi_df, filename, args.path)
 						everything_df = everything_df.append(chi_df)
 						everything_df = everything_df.reset_index(drop=True)
 						meta_df = meta_df.append(end_df)
 						meta_df = meta_df.reset_index(drop=True)
 	# Saving both data frames to .txt file
-	everything_df.to_csv('everything_model_df.txt', sep='\t')
-	meta_df.to_csv('meta_model_df.txt', sep='\t')
+	script_dir = args.path
+	results_dir = os.path.join(script_dir, 'Output_Model/')
+	everything_df.to_csv(results_dir + 'everything_model_df.txt', sep='\t')
+	meta_df.to_csv(results_dir + 'meta_model_df.txt', sep='\t')
 	print('Process Complete!')
 
 if __name__ == '__main__':

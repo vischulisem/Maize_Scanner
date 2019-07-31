@@ -17,6 +17,7 @@ import seaborn as sns
 # Setting up argparse arguments
 parser = argparse.ArgumentParser(description='Given XML file(s), scatterplot of fluor and nonfluor kernels.')
 parser.add_argument('-x', '--xml', metavar='', help='Input XML filename or directory.', type=str)
+parser.add_argument('-p', '--path', metavar='', help='List path where you want files saved to.', default=os.getcwd(), type=str)
 args = parser.parse_args()
 
 # This function checks XML file for types 4-8 and skips if present
@@ -139,7 +140,7 @@ def parse_xml(input_xml, tree):
     return df, image_name_string
 
 # Generating plot of coordinate values on ear of fluor and nonfluor
-def make_scatter(df, xml):
+def make_scatter(df, xml, path):
     # Setting background as white
     sns.set_style("white")
     # Setting figure size
@@ -155,7 +156,7 @@ def make_scatter(df, xml):
     figure = ax.get_figure()
 
     # Create directory to save plots
-    script_dir = os.path.dirname(__file__)
+    script_dir = path
     results_dir = os.path.join(script_dir, 'Kern_Coord_plots/')
     # Sample_file_name
     sample_file_name = xml[:-4] + '.png'
@@ -180,7 +181,7 @@ def main():
         # check xml error fun
         print(f'Processing {args.xml}...')
         dataframe, image_name = parse_xml(args.xml, tree)
-        make_scatter(dataframe, image_name)
+        make_scatter(dataframe, image_name, args.path)
     # Processing directory of xml files
     else:
         for roots, dirs, files in os.walk(args.xml):
@@ -193,7 +194,7 @@ def main():
                         if result == 'True':
                             continue
                         dataframe, image_name = parse_xml(f, tree)
-                        make_scatter(dataframe, image_name)
+                        make_scatter(dataframe, image_name, args.path)
 
 if __name__ == '__main__':
     main()

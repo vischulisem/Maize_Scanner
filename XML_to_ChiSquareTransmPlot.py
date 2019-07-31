@@ -36,6 +36,7 @@ parser.add_argument('-w', '--width', metavar='', help='Width in pixels for the l
 parser.add_argument('-s', '--step_size', metavar='', help='Steps in pixels for window movement.', default=2, type=int)
 parser.add_argument('-n', action='store_true', help='Will normalize x axis of transmission plots.')
 parser.add_argument('-tk', '--total_kernels', metavar='', help='Determine threshold for total kernels on ear for skipping file.', default=50, type=int)
+parser.add_argument('-p', '--path', metavar='', help='List path where you want files saved to.', default=os.getcwd(), type=str)
 args = parser.parse_args()
 
 # This function checks XML file for types 4-8 and skips if present
@@ -340,7 +341,7 @@ def chisquare_test(kern_count_df):
 # Plots a line for percent transmission across the ear
 # colored based on whether point is above or below p = 0.05
 # Does normalize window mean x axis
-def pval_plot(final_df, xml, overall_kernel_total, overall_perc_trans, overall_pval, count_7):
+def pval_plot(final_df, xml, overall_kernel_total, overall_perc_trans, overall_pval, count_7, path):
 	# Hiding error message
 	plt.rcParams.update({'figure.max_open_warning': 0})
 
@@ -451,8 +452,8 @@ def pval_plot(final_df, xml, overall_kernel_total, overall_perc_trans, overall_p
 	pv_plot = lc.get_figure()
 
 	# Create directory to save plots
-	script_dir = os.path.dirname(__file__)
-	results_dir = os.path.join(script_dir, 'Transmission_Norm_plots/')
+	script_dir = path
+	results_dir = os.path.join(script_dir, 'Output_XML_to_ChiSquareTransmPlot/Transmission_Norm_plots/')
 	# Sample_file_name
 	sample_file_name = xml[:-4] + '.png'
 
@@ -478,7 +479,7 @@ def pval_plot(final_df, xml, overall_kernel_total, overall_perc_trans, overall_p
 # Plots a line for percent transmission across the ear
 # colored based on whether point is above or below p = 0.05
 # Doesn't normalize window mean x axis
-def pval_notnorm_plot(final_df, xml, overall_kernel_total, overall_perc_trans, overall_pval, count_7):
+def pval_notnorm_plot(final_df, xml, overall_kernel_total, overall_perc_trans, overall_pval, count_7, path):
 	# Hiding error message
 	plt.rcParams.update({'figure.max_open_warning': 0})
 
@@ -588,8 +589,8 @@ def pval_notnorm_plot(final_df, xml, overall_kernel_total, overall_perc_trans, o
 	pv_plot = lc.get_figure()
 
 	# Create directory to save plots
-	script_dir = os.path.dirname(__file__)
-	results_dir = os.path.join(script_dir, 'Transmission_plots/')
+	script_dir = path
+	results_dir = os.path.join(script_dir, 'Output_XML_to_ChiSquareTransmPlot/Transmission_plots/')
 	# Sample_file_name
 	sample_file_name = xml[:-4] + '.png'
 
@@ -639,7 +640,12 @@ def main():
 		if (ans1 == 'True') or (ans2 == 'True') or (ans3 == 'True'):
 			sys.exit('Program Exit')
 		chi_df = chisquare_test(dataframe2)
-		trans_plot, end_df = pval_plot(chi_df, args.xml, overall_kernel_total, overall_perc_trans, overall_pval)
+		if args.n:
+			trans_plot, end_df = pval_plot(chi_df, filename, overall_kernel_total, overall_perc_trans, overall_pval,
+										   count_7, args.path)
+		else:
+			trans_plot, end_df = pval_notnorm_plot(chi_df, filename, overall_kernel_total, overall_perc_trans,
+												   overall_pval, count_7, args.path)
 		everything_df = everything_df.append(chi_df)
 		everything_df = everything_df.reset_index(drop=True)
 		meta_df = meta_df.append(end_df)
@@ -670,18 +676,23 @@ def main():
 							continue
 						chi_df = chisquare_test(dataframe2)
 						if args.n:
-							trans_plot, end_df = pval_plot(chi_df, filename, overall_kernel_total, overall_perc_trans, overall_pval, count_7)
+							trans_plot, end_df = pval_plot(chi_df, filename, overall_kernel_total, overall_perc_trans, overall_pval, count_7, args.path)
 						else:
 							trans_plot, end_df = pval_notnorm_plot(chi_df, filename, overall_kernel_total, overall_perc_trans,
-														   overall_pval, count_7)
+														   overall_pval, count_7, args.path)
 						everything_df = everything_df.append(chi_df)
 						everything_df = everything_df.reset_index(drop=True)
 						meta_df = meta_df.append(end_df)
 						meta_df = meta_df.reset_index(drop=True)
 
 	# Saving dataframes
-	everything_df.to_csv('everything_df.txt', sep='\t')
-	meta_df.to_csv('meta_df.txt', sep='\t')
+	script_dir = args.path
+	results_dir = os.path.join(script_dir, 'Output_XML_to_ChiSquareTransmPlot/')
+	if not os.path.isdir(results_dir):
+		os.makedirs(results_dir)
+	everything_df.to_csv(results_dir + 'everything_df.txt', sep='\t')
+	meta_df.to_csv(results_dir + 'meta_df.txt', sep='\t')
+
 	print('Process Complete!')
 
 if __name__ == '__main__':

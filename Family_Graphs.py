@@ -17,13 +17,14 @@ from scipy import stats
 # setting up argparse arguments
 parser = argparse.ArgumentParser(description='Given meta df, start and stop values for male families, returns plots')
 parser.add_argument('-i', '--input_df', metavar='', help='Input meta dataframe filename.', type=str)
-parser.add_argument('-sv', '--start_value', metavar='', help='Starting number for male family plots, must be in 400s', default=410, type=int)
+parser.add_argument('-sv', '--start_value', metavar='', help='Starting number for male family plots, must be in 400s', default=411, type=int)
 parser.add_argument('-ev', '--end_value', metavar='', help='Ending number for male family plots, must be in 400s', default=499, type=int)
 parser.add_argument('-n', action='store_true', help='Will normalize x axis of transmission plots.')
+parser.add_argument('-p', '--path', metavar='', help='List path where you want files saved to.', default=os.getcwd(), type=str)
 args = parser.parse_args()
 
 # Plots everything in .txt file
-def everything_everything_graph(input_df):
+def everything_everything_graph(input_df, path):
 	print(f'Starting everything plot...')
 
 	sns.set_style("white")
@@ -44,7 +45,11 @@ def everything_everything_graph(input_df):
 	plt.rcParams["axes.labelweight"] = "bold"
 	# Saving figure
 	everything_ev_plot = everything_plot.get_figure()
-	everything_ev_plot.savefig('everything_plot.png', bbox_inches="tight")
+	script_dir = path
+	results_dir = os.path.join(script_dir, 'Output_Family_Graphs/')
+	if not os.path.isdir(results_dir):
+		os.makedirs(results_dir)
+	everything_ev_plot.savefig(results_dir + 'everything_plot.png', bbox_inches="tight")
 	# Calculating regression
 	reg_x = data['window_mean'].values
 	reg_y = data['Percent_Transmission'].values
@@ -58,7 +63,7 @@ def everything_everything_graph(input_df):
 	return everything_ev_plot
 
 # Plots only xml files in .txt with X4..x4...
-def only400s_plot(input_df):
+def only400s_plot(input_df, path):
 	print(f'Starting everything 400s plot...')
 
 	sns.set_style("white")
@@ -82,7 +87,11 @@ def only400s_plot(input_df):
 	plt.rcParams["axes.labelweight"] = "bold"
 	# Saving figure
 	justfours_plot = justfours.get_figure()
-	justfours_plot.savefig('Everything_400.png', bbox_inches="tight")
+	script_dir = path
+	results_dir = os.path.join(script_dir, 'Output_Family_Graphs/')
+	if not os.path.isdir(results_dir):
+		os.makedirs(results_dir)
+	justfours_plot.savefig(results_dir + 'Everything_400.png', bbox_inches="tight")
 	# Regression Calculation
 	reg_x = data['window_mean'].values
 	reg_y = data['Percent_Transmission'].values
@@ -95,7 +104,7 @@ def only400s_plot(input_df):
 	return justfours_plot
 
 # Plots only xml files named ....x4....
-def female_cross_plot(input_df):
+def female_cross_plot(input_df, path):
 	print(f'Starting female plot...')
 
 	sns.set_style("white")
@@ -119,7 +128,11 @@ def female_cross_plot(input_df):
 	plt.rcParams["axes.labelweight"] = "bold"
 	# Saving Figure
 	female_plot = female.get_figure()
-	female_plot.savefig('Female 400s Cross Plot.png', bbox_inches="tight")
+	script_dir = path
+	results_dir = os.path.join(script_dir, 'Output_Family_Graphs/')
+	if not os.path.isdir(results_dir):
+		os.makedirs(results_dir)
+	female_plot.savefig(results_dir + 'Female 400s Cross Plot.png', bbox_inches="tight")
 	# Calculating regression
 	reg_x = data['window_mean'].values
 	reg_y = data['Percent_Transmission'].values
@@ -132,7 +145,7 @@ def female_cross_plot(input_df):
 	return female_plot
 
 # Plots everything in .txt file
-def everything_norm_everything_graph(input_df):
+def everything_norm_everything_graph(input_df, path):
 	print(f'Starting everything plot...')
 
 	sns.set_style("white")
@@ -145,7 +158,7 @@ def everything_norm_everything_graph(input_df):
 	everything_plot.yaxis.grid(True)
 	everything_plot.set(yticks=[0, 0.25, 0.5, 0.75, 1])
 
-	plt.title('Everything Plot', fontsize=30, weight='bold', loc='center', verticalalignment='baseline')
+	plt.title('Everything Norm Plot', fontsize=30, weight='bold', loc='center', verticalalignment='baseline')
 	plt.xlabel('Normalized Window Position (pixels)', fontsize=18, weight='bold')
 	plt.ylabel('Percent Transmission', fontsize=18, weight='bold')
 
@@ -153,7 +166,11 @@ def everything_norm_everything_graph(input_df):
 	plt.rcParams["axes.labelweight"] = "bold"
 	# Saving figure
 	everything_ev_plot = everything_plot.get_figure()
-	everything_ev_plot.savefig('everything_norm_plot.png', bbox_inches="tight")
+	script_dir = path
+	results_dir = os.path.join(script_dir, 'Output_Family_Graphs/')
+	if not os.path.isdir(results_dir):
+		os.makedirs(results_dir)
+	everything_ev_plot.savefig(results_dir + 'everything_norm_plot.png', bbox_inches="tight")
 	# Calculating regression
 	reg_x = data['Normalized_Window_Mean'].values
 	reg_y = data['Percent_Transmission'].values
@@ -167,7 +184,7 @@ def everything_norm_everything_graph(input_df):
 	return everything_ev_plot
 
 # Plots only xml files in .txt with X4..x4...
-def only400s_norm_plot(input_df):
+def only400s_norm_plot(input_df, path):
 	print(f'Starting everything 400s plot...')
 
 	sns.set_style("white")
@@ -183,7 +200,7 @@ def only400s_norm_plot(input_df):
 	justfours.yaxis.grid(True)
 	justfours.set(yticks=[0, 0.25, 0.5, 0.75, 1])
 
-	plt.title('Everything 400s', fontsize=30, weight='bold', loc='center', verticalalignment='baseline')
+	plt.title('Everything Norm 400s', fontsize=30, weight='bold', loc='center', verticalalignment='baseline')
 	plt.xlabel('Normalized Window Position (pixels)', fontsize=18, weight='bold')
 	plt.ylabel('Percent Transmission', fontsize=18, weight='bold')
 
@@ -191,7 +208,11 @@ def only400s_norm_plot(input_df):
 	plt.rcParams["axes.labelweight"] = "bold"
 	# Saving figure
 	justfours_plot = justfours.get_figure()
-	justfours_plot.savefig('Everything_norm_400.png', bbox_inches="tight")
+	script_dir = path
+	results_dir = os.path.join(script_dir, 'Output_Family_Graphs/')
+	if not os.path.isdir(results_dir):
+		os.makedirs(results_dir)
+	justfours_plot.savefig(results_dir + 'Everything_norm_400.png', bbox_inches="tight")
 	# Regression Calculation
 	reg_x = data['Normalized_Window_Mean'].values
 	reg_y = data['Percent_Transmission'].values
@@ -204,7 +225,7 @@ def only400s_norm_plot(input_df):
 	return justfours_plot
 
 # Plots only xml files named ....x4....
-def female_cross_norm_plot(input_df):
+def female_cross_norm_plot(input_df, path):
 	print(f'Starting female plot...')
 
 	sns.set_style("white")
@@ -220,7 +241,7 @@ def female_cross_norm_plot(input_df):
 	female.yaxis.grid(True)
 	female.set(yticks=[0, 0.25, 0.5, 0.75, 1])
 
-	plt.title('Female 400s Cross Plot', fontsize=30, weight='bold', loc='center', verticalalignment='baseline')
+	plt.title('Female 400s Norm Cross Plot', fontsize=30, weight='bold', loc='center', verticalalignment='baseline')
 	plt.xlabel('Normalized Window Position (pixels)', fontsize=18, weight='bold')
 	plt.ylabel('Percent Transmission', fontsize=18, weight='bold')
 
@@ -228,7 +249,11 @@ def female_cross_norm_plot(input_df):
 	plt.rcParams["axes.labelweight"] = "bold"
 	# Saving Figure
 	female_plot = female.get_figure()
-	female_plot.savefig('Female 400s Norm Cross Plot.png', bbox_inches="tight")
+	script_dir = path
+	results_dir = os.path.join(script_dir, 'Output_Family_Graphs/')
+	if not os.path.isdir(results_dir):
+		os.makedirs(results_dir)
+	female_plot.savefig(results_dir + 'Female 400s Norm Cross Plot.png', bbox_inches="tight")
 	# Calculating regression
 	reg_x = data['Normalized_Window_Mean'].values
 	reg_y = data['Percent_Transmission'].values
@@ -242,7 +267,7 @@ def female_cross_norm_plot(input_df):
 
 # User can input low and high parameter corresponding to number of 400 male family to plot
 # Files are sorted and grouped together, x coordinates (window mean) normalized for all lines
-def male_fam_plot(input_df, low, high):
+def male_fam_plot(input_df, low, high, path):
 	print(f'Starting male plots...')
 	for i in range(low, high):
 		# Reading in txt file as dataframe
@@ -314,13 +339,12 @@ def male_fam_plot(input_df, low, high):
 			male_graph = male.get_figure()
 
 			# create directory to save plots
-			script_dir = os.path.dirname(__file__)
-			results_dir = os.path.join(script_dir, 'Male_Plots/')
-			# sample_file_name
-			sample_file_name = repr(i) + '.png'
-
+			script_dir = path
+			results_dir = os.path.join(script_dir, 'Output_Family_Graphs/Male_Plots/')
 			if not os.path.isdir(results_dir):
 				os.makedirs(results_dir)
+			# sample_file_name
+			sample_file_name = repr(i) + '.png'
 
 			male_graph.savefig(results_dir + sample_file_name, bbox_inches="tight")
 			plt.close()
@@ -331,15 +355,14 @@ def male_fam_plot(input_df, low, high):
 
 def main():
 	if args.n:
-		everything_norm_everything_graph(args.input_df)
-		only400s_norm_plot(args.input_df)
-		female_cross_norm_plot(args.input_df)
+		everything_norm_everything_graph(args.input_df, args.path)
+		only400s_norm_plot(args.input_df, args.path)
+		female_cross_norm_plot(args.input_df, args.path)
 	else:
-		everything_everything_graph(args.input_df)
-		only400s_plot(args.input_df)
-		female_cross_plot(args.input_df)
-	male_fam_plot(args.input_df, args.start_value, args.end_value)
-
+		everything_everything_graph(args.input_df, args.path)
+		only400s_plot(args.input_df, args.path)
+		female_cross_plot(args.input_df, args.path)
+	male_fam_plot(args.input_df, args.start_value, args.end_value, args.path)
 
 if __name__ == '__main__':
 	main()
