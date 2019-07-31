@@ -35,6 +35,7 @@ parser.add_argument('-x', '--xml', metavar='', help='Input XML filename.', type=
 parser.add_argument('-w', '--width', metavar='', help='Width in pixels for the length of the window.', default=400, type=int)
 parser.add_argument('-s', '--step_size', metavar='', help='Steps in pixels for window movement.', default=2, type=int)
 parser.add_argument('-n', action='store_true', help='Will normalize x axis of transmission plots.')
+parser.add_argument('-tk', '--total_kernels', metavar='', help='Determine threshold for total kernels on ear for skipping file.', default=50, type=int)
 args = parser.parse_args()
 
 # This function checks XML file for types 4-8 and skips if present
@@ -76,23 +77,20 @@ def check_xml_error(input_xml):
 		count_7 = len(list(root_7))
 	except IndexError:
 		print('No root 7 in this file')
-		count_7 = 0
 
 	try:
 		root_8 = root[1][8]
-		count_8 = len(list(root_8))
 	except IndexError:
 		print('No root 8 in this file')
-		count_8 = 0
 
 	# Checking if anything exists in other types
-	if (count_4 > 1) or (count_5 > 1) or (count_6 > 1) or (count_7 > 1) or (count_8 > 1):
+	if (count_4 > 1) or (count_5 > 1) or (count_6 > 1):
 		print(f'ERROR: {image_name_string} skipped...contains unknown type.')
 		result = 'True'
 	else:
 		result = 'False'
 	# If result = 'True then skipped in main()
-	return result, tree
+	return result, tree, count_7
 
 # Function that gets X, Y coord for each kernel and labels as fluor or nonfluor
 # Dataframe is outputted with this info
@@ -107,6 +105,8 @@ def parse_xml(input_xml, tree):
 	# Pulling out the fluorescent and non-fluorescent children
 	fluorescent = root[1][1]
 	nonfluorescent = root[1][2]
+	purple = root[1][7]
+	yellow = root[1][8]
 
 	# Setting up some empty lists to move the coordinates from the xml into
 	fluor_x = []
@@ -122,6 +122,18 @@ def parse_xml(input_xml, tree):
 
 	# Getting the coordinates of the non-fluorescent kernels
 	for child in nonfluorescent:
+		if child.tag == 'Marker':
+			nonfluor_x.append(child.find('MarkerX').text)
+			nonfluor_y.append(child.find('MarkerY').text)
+
+	# Getting the coordinates of the purple kernels
+	for child in purple:
+		if child.tag == 'Marker':
+			fluor_x.append(child.find('MarkerX').text)
+			fluor_y.append(child.find('MarkerY').text)
+
+	# Getting the coordinates of the yellow kernels
+	for child in yellow:
 		if child.tag == 'Marker':
 			nonfluor_x.append(child.find('MarkerX').text)
 			nonfluor_y.append(child.find('MarkerY').text)
@@ -170,7 +182,7 @@ def parse_xml(input_xml, tree):
 	chi_stat = stats.chisquare([overall_fluor_tot, overall_nonfluor_tot], [overall_expected, overall_expected])
 	overall_pval = chi_stat[1]
 
-	return df, overall_kernel_total, overall_perc_trans, overall_pval
+	return df, overall_kernel_total, overall_perc_trans, overall_pval, overall_fluor_tot, overall_nonfluor_tot
 
 # Creates sliding parameter to count total kernels, fluor, and nonfluor on ear as you move across
 # left to right. User inputs the desired window length and step size in pixels.
@@ -328,7 +340,7 @@ def chisquare_test(kern_count_df):
 # Plots a line for percent transmission across the ear
 # colored based on whether point is above or below p = 0.05
 # Does normalize window mean x axis
-def pval_plot(final_df, xml, overall_kernel_total, overall_perc_trans, overall_pval):
+def pval_plot(final_df, xml, overall_kernel_total, overall_perc_trans, overall_pval, count_7):
 	# Hiding error message
 	plt.rcParams.update({'figure.max_open_warning': 0})
 
@@ -418,9 +430,15 @@ def pval_plot(final_df, xml, overall_kernel_total, overall_perc_trans, overall_p
 	rsq = round(rsq, 3)
 	p_value = '{:0.3e}'.format(p_value)
 
+	if count_7 > 1:
+		purple = 'Yes'
+	else:
+		purple = 'No'
+
 	textstr = '\n'.join((f'Overall Total Kernels = {overall_kernel_total}',
 						 f'Overall Percent Transmission = {overall_perc_trans}',
 						 f'Overall ChiSquared P-Value = {overall_pval}',
+						 f'Purple Kernels Present? {purple}',
 						 f'% Windows not 0.5 Transmission = {window_stat}',
 						 f'Regression Slope = {slope}',
 						 f'Regression Intercept = {intercept}',
@@ -460,7 +478,7 @@ def pval_plot(final_df, xml, overall_kernel_total, overall_perc_trans, overall_p
 # Plots a line for percent transmission across the ear
 # colored based on whether point is above or below p = 0.05
 # Doesn't normalize window mean x axis
-def pval_notnorm_plot(final_df, xml, overall_kernel_total, overall_perc_trans, overall_pval):
+def pval_notnorm_plot(final_df, xml, overall_kernel_total, overall_perc_trans, overall_pval, count_7):
 	# Hiding error message
 	plt.rcParams.update({'figure.max_open_warning': 0})
 
@@ -549,9 +567,15 @@ def pval_notnorm_plot(final_df, xml, overall_kernel_total, overall_perc_trans, o
 	rsq = round(rsq, 3)
 	p_value = '{:0.3e}'.format(p_value)
 
+	if count_7 > 1:
+		purple = 'Yes'
+	else:
+		purple = 'No'
+
 	textstr = '\n'.join((f'Overall Total Kernels = {overall_kernel_total}',
 						 f'Overall Percent Transmission = {overall_perc_trans}',
 						 f'Overall ChiSquared P-Value = {overall_pval}',
+						 f'Purple Kernels Present? {purple}',
 						 f'% Windows not 0.5 Transmission = {window_stat}',
 						 f'Regression Slope = {slope}',
 						 f'Regression Intercept = {intercept}',
@@ -599,21 +623,27 @@ def main():
 
 # Processing single file as argument
 	if args.xml.endswith(".xml"):
-		result, tree = check_xml_error(args.xml)
+		result, tree, count_7 = check_xml_error(args.xml)
 		if result == 'True':
 			sys.exit('Program Exit')
 		# check xml error fun
 		print(f'Processing {args.xml}...')
-		dataframe, overall_kernel_total, overall_perc_trans, overall_pval = parse_xml(args.xml, tree)
+		dataframe, overall_kernel_total, overall_perc_trans, overall_pval, overall_fluor_tot, overall_nonfluor_tot = parse_xml(args.xml, tree)
+		if overall_kernel_total <= args.total_kernels:
+			sys.exit(f'{args.xml} skipped...overall kernel total less than {args.total_kernels}')
+		if overall_fluor_tot == 0:
+			sys.exit(f'{args.xml} skipped...no fluorescent kernels on ear.')
+		if overall_nonfluor_tot == 0:
+			sys.exit(f'{args.xml} skipped...no nonfluorescent kernels on ear.')
 		dataframe2, ans1, ans2, ans3 = sliding_window(dataframe, args.width, args.step_size, args.xml)
 		if (ans1 == 'True') or (ans2 == 'True') or (ans3 == 'True'):
 			sys.exit('Program Exit')
 		chi_df = chisquare_test(dataframe2)
 		trans_plot, end_df = pval_plot(chi_df, args.xml, overall_kernel_total, overall_perc_trans, overall_pval)
+		everything_df = everything_df.append(chi_df)
+		everything_df = everything_df.reset_index(drop=True)
 		meta_df = meta_df.append(end_df)
 		meta_df = meta_df.reset_index(drop=True)
-	# meta_df.to_csv('meta_df.txt', sep='\t')
-
 # Processing directory of xml files
 	else:
 		for roots, dirs, files in os.walk(args.xml):
@@ -622,19 +652,28 @@ def main():
 				print(f'Processing {fullpath}...')
 				if fullpath.endswith(".xml"):
 					with open(fullpath, 'r') as f:
-						result, tree = check_xml_error(f)
+						result, tree, count_7 = check_xml_error(f)
 						if result == 'True':
 							continue
-						dataframe, overall_kernel_total, overall_perc_trans, overall_pval = parse_xml(f, tree)
+						dataframe, overall_kernel_total, overall_perc_trans, overall_pval, overall_fluor_tot, overall_nonfluor_tot = parse_xml(f, tree)
+						if overall_kernel_total <= args.total_kernels:
+							print(f'{filename} skipped...overall kernel total less than {args.total_kernels}')
+							continue
+						if overall_fluor_tot == 0:
+							print(f'{filename} skipped...no fluorescent kernels on ear.')
+							continue
+						if overall_nonfluor_tot == 0:
+							print(f'{filename} skipped...no nonfluorescent kernels on ear.')
+							continue
 						dataframe2, ans1, ans2, ans3 = sliding_window(dataframe, args.width, args.step_size, filename)
 						if (ans1 == 'True') or (ans2 == 'True') or (ans3 == 'True'):
 							continue
 						chi_df = chisquare_test(dataframe2)
 						if args.n:
-							trans_plot, end_df = pval_plot(chi_df, filename, overall_kernel_total, overall_perc_trans, overall_pval)
+							trans_plot, end_df = pval_plot(chi_df, filename, overall_kernel_total, overall_perc_trans, overall_pval, count_7)
 						else:
 							trans_plot, end_df = pval_notnorm_plot(chi_df, filename, overall_kernel_total, overall_perc_trans,
-														   overall_pval)
+														   overall_pval, count_7)
 						everything_df = everything_df.append(chi_df)
 						everything_df = everything_df.reset_index(drop=True)
 						meta_df = meta_df.append(end_df)

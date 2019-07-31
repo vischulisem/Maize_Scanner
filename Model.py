@@ -25,6 +25,7 @@ parser.add_argument('-x', '--xml', metavar='', help='Input XML filename.', type=
 parser.add_argument('-w', '--width', metavar='', help='Width in pixels for the length of the window.', default=400, type=int)
 parser.add_argument('-s', '--step_size', metavar='', help='Steps in pixels for window movement.', default=2, type=int)
 parser.add_argument('-n', action='store_true', help='Will normalize x axis of transmission plots.')
+parser.add_argument('-tk', '--total_kernels', metavar='', help='Determine threshold for total kernels on ear for skipping file.', default=50, type=int)
 args = parser.parse_args()
 
 # This function checks XML file for types 4-8 and skips if present
@@ -66,32 +67,25 @@ def check_xml_error(input_xml):
 		count_7 = len(list(root_7))
 	except IndexError:
 		print('No root 7 in this file')
-		count_7 = 0
 
 	try:
 		root_8 = root[1][8]
-		count_8 = len(list(root_8))
 	except IndexError:
 		print('No root 8 in this file')
-		count_8 = 0
 
 	# Checking if anything exists in other types
-	if (count_4 > 1) or (count_5 > 1) or (count_6 > 1) or (count_7 > 1) or (count_8 > 1):
+	if (count_4 > 1) or (count_5 > 1) or (count_6 > 1):
 		print(f'ERROR: {image_name_string} skipped...contains unknown type.')
 		result = 'True'
 	else:
 		result = 'False'
-
+	# If result = 'True then skipped in main()
 	return result, tree
 
 # Function that gets X, Y coord for each kernel and labels as fluor or nonfluor
 # Dataframe is outputted with this info
-# Models generated
 # Overall ear stats calculated at end to be shown on pval_plots later
 def parse_xml(input_xml, tree):
-	# Make element tree for object
-	# tree = ET.parse(input_xml)
-
 	# Getting the root of the tree
 	root = tree.getroot()
 
@@ -101,6 +95,8 @@ def parse_xml(input_xml, tree):
 	# Pulling out the fluorescent and non-fluorescent children
 	fluorescent = root[1][1]
 	nonfluorescent = root[1][2]
+	purple = root[1][7]
+	yellow = root[1][8]
 
 	# Setting up some empty lists to move the coordinates from the xml into
 	fluor_x = []
@@ -116,6 +112,18 @@ def parse_xml(input_xml, tree):
 
 	# Getting the coordinates of the non-fluorescent kernels
 	for child in nonfluorescent:
+		if child.tag == 'Marker':
+			nonfluor_x.append(child.find('MarkerX').text)
+			nonfluor_y.append(child.find('MarkerY').text)
+
+	# Getting the coordinates of the purple kernels
+	for child in purple:
+		if child.tag == 'Marker':
+			fluor_x.append(child.find('MarkerX').text)
+			fluor_y.append(child.find('MarkerY').text)
+
+	# Getting the coordinates of the yellow kernels
+	for child in yellow:
 		if child.tag == 'Marker':
 			nonfluor_x.append(child.find('MarkerX').text)
 			nonfluor_y.append(child.find('MarkerY').text)
@@ -147,7 +155,11 @@ def parse_xml(input_xml, tree):
 	df['X-Coordinate'] = df['X-Coordinate'].astype(np.int64)
 	df['Y-Coordinate'] = df['Y-Coordinate'].astype(np.int64)
 	df = df.reset_index(drop=True)
-	return df
+
+	# Counting total number of kernels per ear
+	overall_kernel_total = int(len(df.index))
+
+	return df, overall_kernel_total
 
 # Creates sliding parameter to count total kernels, fluor, and nonfluor on ear as you move across
 # left to right. User inputs the desired window length and step size in pixels.
@@ -764,7 +776,9 @@ def main():
 			sys.exit('Program Exit')
 		# Check xml error function
 		print(f'Processing {args.xml}...')
-		dataframe = parse_xml(args.xml, tree)
+		dataframe, overall_kernel_total = parse_xml(args.xml, tree)
+		if overall_kernel_total <= args.total_kernels:
+			sys.exit(f'{args.xml} skipped...overall kernel total less than {args.total_kernels}')
 		dataframe2, ans1, ans2, ans3 = sliding_window(dataframe, args.width, args.step_size, args.xml)
 		# Error checking for improper width or step size from sliding_window()
 		if (ans1 == 'True') or (ans2 == 'True') or (ans3 == 'True'):
@@ -789,7 +803,10 @@ def main():
 						result, tree = check_xml_error(f)
 						if result == 'True':
 							continue
-						dataframe = parse_xml(f, tree)
+						dataframe, overall_kernel_total = parse_xml(f, tree)
+						if overall_kernel_total <= args.total_kernels:
+							print(f'{filename} skipped...overall kernel total less than {args.total_kernels}')
+							continue
 						dataframe2, ans1, ans2, ans3 = sliding_window(dataframe, args.width, args.step_size, filename)
 						# Error checking for improper width or step size from sliding_window()
 						if (ans1 == 'True') or (ans2 == 'True') or (ans3 == 'True'):
