@@ -32,7 +32,10 @@ pysal https://pysal.org/install</br>
     Outputs: New directory 'Transmission_plots' containing graphs corresponding to each xml file with positional
     percent transmission for each window, regression, and ear statistics. Also outputs 'meta_df.txt' which contains overall 
     ear stats and p-values. Also outputs 'everything_df.txt' which contains all window calculations and p values for each window for
-    each xml file. .txt files are tab delimited use to reconvert to new pandas dataframe in later scripts. 
+    each xml file. .txt files are tab delimited use to reconvert to new pandas dataframe in later scripts. </br>
+    
+   Example of positional transmission plot:
+   ![Positional Transmission Plot](Users/elysevischulis/PycharmProjects/MaizeScanner/Output_XML_to_ChiSquareTransmPlot/Transmission_Norm_plots/X4-6x402.png)
     
 ### 2. Family_Graphs.py
 
