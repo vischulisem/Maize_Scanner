@@ -60,7 +60,7 @@ pysal https://pysal.org/install</br>
       This script accepts single xml file or directory of xml files as arguments. Outputs scatterplots. </br>
     -p will allow you to select path to save files. Default is current path.
 
-## Modelling Analysis: 
+## Modelling Analysis
 
   This group of scripts must be run in this order. Scripts are similar to those above however this generates 5 different models for
   each xml file. At each kernel coordinate, whether the point is fluorescent or nonfluorescent is randomly assigned. 
