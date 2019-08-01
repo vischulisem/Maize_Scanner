@@ -2,7 +2,7 @@
 This repository is a group of scripts and data to analyze an ear of maize. Each script can be cloned and run in the terminal and uses argparse as argument parser.</br>
 Scripts and the order they should be run are outlined below.
 
-## Prerequisits
+## Prerequisites
 numpy https://docs.scipy.org/doc/numpy/user/install.html </br>
 argparse https://pypi.org/project/argparse/</br>
 xml.etree.ElementTree https://docs.python.org/3/library/xml.etree.elementtree.html</br>
