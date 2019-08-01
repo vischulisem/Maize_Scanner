@@ -1,6 +1,7 @@
- Foobar
-
-Foobar is a Python library for dealing with word pluralization.
+#Overview
+This repository is a group of scripts and data to analyze an ear of maize. Each script can be run in the terminal and uses argparse as
+argument parser.
+Scripts and the order they should be run are outlined below:
 
 ## Installation
 
