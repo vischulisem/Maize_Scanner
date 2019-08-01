@@ -3,7 +3,7 @@ This repository is a group of scripts and data to analyze an ear of maize. Each 
 Scripts and the order they should be run are outlined below:
 
 ## Prerequisits
-numpy https://docs.scipy.org/doc/numpy/user/install.html
+numpy https://docs.scipy.org/doc/numpy/user/install.html </br>
 argparse https://pypi.org/project/argparse/
 xml.etree.ElementTree https://docs.python.org/3/library/xml.etree.elementtree.html
 pandas https://pandas.pydata.org/pandas-docs/stable/install.html
