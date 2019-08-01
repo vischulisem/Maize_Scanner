@@ -68,11 +68,14 @@ def check_xml_error(input_xml):
 		count_7 = len(list(root_7))
 	except IndexError:
 		print('No root 7 in this file')
+		count_7 = 0
 
 	try:
 		root_8 = root[1][8]
+		count_8 = len(list(root_8))
 	except IndexError:
 		print('No root 8 in this file')
+		count_8 = 0
 
 	# Checking if anything exists in other types
 	if (count_4 > 1) or (count_5 > 1) or (count_6 > 1):
@@ -81,12 +84,12 @@ def check_xml_error(input_xml):
 	else:
 		result = 'False'
 	# If result = 'True then skipped in main()
-	return result, tree
+	return result, tree, count_7, count_8
 
 # Function that gets X, Y coord for each kernel and labels as fluor or nonfluor
 # Dataframe is outputted with this info
 # Overall ear stats calculated at end to be shown on pval_plots later
-def parse_xml(input_xml, tree):
+def parse_xml(input_xml, tree, count_7, count_8):
 	# Getting the root of the tree
 	root = tree.getroot()
 
@@ -96,14 +99,29 @@ def parse_xml(input_xml, tree):
 	# Pulling out the fluorescent and non-fluorescent children
 	fluorescent = root[1][1]
 	nonfluorescent = root[1][2]
-	purple = root[1][7]
-	yellow = root[1][8]
 
 	# Setting up some empty lists to move the coordinates from the xml into
 	fluor_x = []
 	fluor_y = []
 	nonfluor_x = []
 	nonfluor_y = []
+
+	# If something is listed in root 7...
+	if count_7 > 1:
+		purple = root[1][7]
+		# Getting the coordinates of the purple kernels
+		for child in purple:
+			if child.tag == 'Marker':
+				fluor_x.append(child.find('MarkerX').text)
+				fluor_y.append(child.find('MarkerY').text)
+	# If something is listed in root 8...
+	if count_8 > 1:
+		yellow = root[1][8]
+		# Getting the coordinates of the yellow kernels
+		for child in yellow:
+			if child.tag == 'Marker':
+				nonfluor_x.append(child.find('MarkerX').text)
+				nonfluor_y.append(child.find('MarkerY').text)
 
 	# Getting the coordinates of the fluorescent kernels
 	for child in fluorescent:
@@ -113,18 +131,6 @@ def parse_xml(input_xml, tree):
 
 	# Getting the coordinates of the non-fluorescent kernels
 	for child in nonfluorescent:
-		if child.tag == 'Marker':
-			nonfluor_x.append(child.find('MarkerX').text)
-			nonfluor_y.append(child.find('MarkerY').text)
-
-	# Getting the coordinates of the purple kernels
-	for child in purple:
-		if child.tag == 'Marker':
-			fluor_x.append(child.find('MarkerX').text)
-			fluor_y.append(child.find('MarkerY').text)
-
-	# Getting the coordinates of the yellow kernels
-	for child in yellow:
 		if child.tag == 'Marker':
 			nonfluor_x.append(child.find('MarkerX').text)
 			nonfluor_y.append(child.find('MarkerY').text)
@@ -772,12 +778,12 @@ def main():
 	everything_df = pd.DataFrame(columns='File Step_Size Window_Start Window_End Total_Kernels Total_Fluor Total_NonFluor Fluor2 Nonfluor2 Fluor3 Nonfluor3 Fluor4 Nonfluor4 Fluor5 Nonfluor5 P-Value Comparison P2-Value Comparison2 P3-Value Comparison3 P4-Value Comparison4 P5-Value Comparison5 window_mean Normalized_Window_Mean Percent_Transmission Percent_Transmission2 Percent_Transmission3 Percent_Transmission4 Percent_Transmission5'.split())
 
 	if args.xml.endswith(".xml"):
-		result, tree = check_xml_error(args.xml)
+		result, tree, count_7, count_8 = check_xml_error(args.xml)
 		if result == 'True':
 			sys.exit('Program Exit')
 		# Check xml error function
 		print(f'Processing {args.xml}...')
-		dataframe, overall_kernel_total = parse_xml(args.xml, tree)
+		dataframe, overall_kernel_total = parse_xml(args.xml, tree, count_7, count_8)
 		if overall_kernel_total <= args.total_kernels:
 			sys.exit(f'{args.xml} skipped...overall kernel total less than {args.total_kernels}')
 		dataframe2, ans1, ans2, ans3 = sliding_window(dataframe, args.width, args.step_size, args.xml)
@@ -801,10 +807,10 @@ def main():
 				print(f'Processing {fullpath}...')
 				if fullpath.endswith(".xml"):
 					with open(fullpath, 'r') as f:
-						result, tree = check_xml_error(f)
+						result, tree, count_7, count_8 = check_xml_error(f)
 						if result == 'True':
 							continue
-						dataframe, overall_kernel_total = parse_xml(f, tree)
+						dataframe, overall_kernel_total = parse_xml(f, tree, count_7, count_8)
 						if overall_kernel_total <= args.total_kernels:
 							print(f'{filename} skipped...overall kernel total less than {args.total_kernels}')
 							continue
@@ -822,11 +828,17 @@ def main():
 						everything_df = everything_df.reset_index(drop=True)
 						meta_df = meta_df.append(end_df)
 						meta_df = meta_df.reset_index(drop=True)
-	# Saving both data frames to .txt file
-	script_dir = args.path
-	results_dir = os.path.join(script_dir, 'Output_Model/')
-	everything_df.to_csv(results_dir + 'everything_model_df.txt', sep='\t')
-	meta_df.to_csv(results_dir + 'meta_model_df.txt', sep='\t')
+	# Saving both data frames to .txt file whether normalized or not
+	if args.n:
+		script_dir = args.path
+		results_dir = os.path.join(script_dir, 'Output_Model/')
+		everything_df.to_csv(results_dir + 'everything_normalized_model_df.txt', sep='\t')
+		meta_df.to_csv(results_dir + 'meta_normalized_model_df.txt', sep='\t')
+	else:
+		script_dir = args.path
+		results_dir = os.path.join(script_dir, 'Output_Model/')
+		everything_df.to_csv(results_dir + 'everything_model_df.txt', sep='\t')
+		meta_df.to_csv(results_dir + 'meta_model_df.txt', sep='\t')
 	print('Process Complete!')
 
 if __name__ == '__main__':

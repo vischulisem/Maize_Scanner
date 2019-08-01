@@ -62,6 +62,6 @@ def make_pval_hist(input_df):
     # plt.close()
     return fig
 
-#plot = make_r_hist("/Users/elysevischulis/PycharmProjects/Maize_Scanner/meta_model_df.txt")
-#plot2 = make_slope_hist("/Users/elysevischulis/PycharmProjects/Maize_Scanner/meta_model_df.txt")
+plot = make_r_hist("/Users/elysevischulis/PycharmProjects/Maize_Scanner/meta_model_df.txt")
+plot2 = make_slope_hist("/Users/elysevischulis/PycharmProjects/Maize_Scanner/meta_model_df.txt")
 plot3 = make_pval_hist("/Users/elysevischulis/PycharmProjects/Maize_Scanner/meta_model_df.txt")

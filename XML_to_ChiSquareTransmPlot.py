@@ -78,11 +78,14 @@ def check_xml_error(input_xml):
 		count_7 = len(list(root_7))
 	except IndexError:
 		print('No root 7 in this file')
+		count_7 = 0
 
 	try:
 		root_8 = root[1][8]
+		count_8 = len(list(root_8))
 	except IndexError:
 		print('No root 8 in this file')
+		count_8 = 0
 
 	# Checking if anything exists in other types
 	if (count_4 > 1) or (count_5 > 1) or (count_6 > 1):
@@ -91,12 +94,12 @@ def check_xml_error(input_xml):
 	else:
 		result = 'False'
 	# If result = 'True then skipped in main()
-	return result, tree, count_7
+	return result, tree, count_7, count_8
 
 # Function that gets X, Y coord for each kernel and labels as fluor or nonfluor
 # Dataframe is outputted with this info
 # Overall ear stats calculated at end to be shown on pval_plots later
-def parse_xml(input_xml, tree):
+def parse_xml(input_xml, tree, count_7, count_8):
 	# Getting the root of the tree
 	root = tree.getroot()
 
@@ -106,14 +109,29 @@ def parse_xml(input_xml, tree):
 	# Pulling out the fluorescent and non-fluorescent children
 	fluorescent = root[1][1]
 	nonfluorescent = root[1][2]
-	purple = root[1][7]
-	yellow = root[1][8]
 
 	# Setting up some empty lists to move the coordinates from the xml into
 	fluor_x = []
 	fluor_y = []
 	nonfluor_x = []
 	nonfluor_y = []
+
+	# If something is listed in root 7...
+	if count_7 > 1:
+		purple = root[1][7]
+		# Getting the coordinates of the purple kernels
+		for child in purple:
+			if child.tag == 'Marker':
+				fluor_x.append(child.find('MarkerX').text)
+				fluor_y.append(child.find('MarkerY').text)
+	# If something is listed in root 8...
+	if count_8 > 1:
+		yellow = root[1][8]
+		# Getting the coordinates of the yellow kernels
+		for child in yellow:
+			if child.tag == 'Marker':
+				nonfluor_x.append(child.find('MarkerX').text)
+				nonfluor_y.append(child.find('MarkerY').text)
 
 	# Getting the coordinates of the fluorescent kernels
 	for child in fluorescent:
@@ -123,18 +141,6 @@ def parse_xml(input_xml, tree):
 
 	# Getting the coordinates of the non-fluorescent kernels
 	for child in nonfluorescent:
-		if child.tag == 'Marker':
-			nonfluor_x.append(child.find('MarkerX').text)
-			nonfluor_y.append(child.find('MarkerY').text)
-
-	# Getting the coordinates of the purple kernels
-	for child in purple:
-		if child.tag == 'Marker':
-			fluor_x.append(child.find('MarkerX').text)
-			fluor_y.append(child.find('MarkerY').text)
-
-	# Getting the coordinates of the yellow kernels
-	for child in yellow:
 		if child.tag == 'Marker':
 			nonfluor_x.append(child.find('MarkerX').text)
 			nonfluor_y.append(child.find('MarkerY').text)
@@ -624,12 +630,12 @@ def main():
 
 # Processing single file as argument
 	if args.xml.endswith(".xml"):
-		result, tree, count_7 = check_xml_error(args.xml)
+		result, tree, count_7, count_8 = check_xml_error(args.xml)
 		if result == 'True':
 			sys.exit('Program Exit')
 		# check xml error fun
 		print(f'Processing {args.xml}...')
-		dataframe, overall_kernel_total, overall_perc_trans, overall_pval, overall_fluor_tot, overall_nonfluor_tot = parse_xml(args.xml, tree)
+		dataframe, overall_kernel_total, overall_perc_trans, overall_pval, overall_fluor_tot, overall_nonfluor_tot = parse_xml(args.xml, tree, count_7, count_8)
 		if overall_kernel_total <= args.total_kernels:
 			sys.exit(f'{args.xml} skipped...overall kernel total less than {args.total_kernels}')
 		if overall_fluor_tot == 0:
@@ -641,10 +647,10 @@ def main():
 			sys.exit('Program Exit')
 		chi_df = chisquare_test(dataframe2)
 		if args.n:
-			trans_plot, end_df = pval_plot(chi_df, filename, overall_kernel_total, overall_perc_trans, overall_pval,
+			trans_plot, end_df = pval_plot(chi_df, args.xml, overall_kernel_total, overall_perc_trans, overall_pval,
 										   count_7, args.path)
 		else:
-			trans_plot, end_df = pval_notnorm_plot(chi_df, filename, overall_kernel_total, overall_perc_trans,
+			trans_plot, end_df = pval_notnorm_plot(chi_df, args.xml, overall_kernel_total, overall_perc_trans,
 												   overall_pval, count_7, args.path)
 		everything_df = everything_df.append(chi_df)
 		everything_df = everything_df.reset_index(drop=True)
@@ -658,10 +664,10 @@ def main():
 				print(f'Processing {fullpath}...')
 				if fullpath.endswith(".xml"):
 					with open(fullpath, 'r') as f:
-						result, tree, count_7 = check_xml_error(f)
+						result, tree, count_7, count_8 = check_xml_error(f)
 						if result == 'True':
 							continue
-						dataframe, overall_kernel_total, overall_perc_trans, overall_pval, overall_fluor_tot, overall_nonfluor_tot = parse_xml(f, tree)
+						dataframe, overall_kernel_total, overall_perc_trans, overall_pval, overall_fluor_tot, overall_nonfluor_tot = parse_xml(f, tree, count_7, count_8)
 						if overall_kernel_total <= args.total_kernels:
 							print(f'{filename} skipped...overall kernel total less than {args.total_kernels}')
 							continue
@@ -685,13 +691,21 @@ def main():
 						meta_df = meta_df.append(end_df)
 						meta_df = meta_df.reset_index(drop=True)
 
-	# Saving dataframes
-	script_dir = args.path
-	results_dir = os.path.join(script_dir, 'Output_XML_to_ChiSquareTransmPlot/')
-	if not os.path.isdir(results_dir):
-		os.makedirs(results_dir)
-	everything_df.to_csv(results_dir + 'everything_df.txt', sep='\t')
-	meta_df.to_csv(results_dir + 'meta_df.txt', sep='\t')
+	# Saving dataframes whether normalized or not
+	if args.n:
+		script_dir = args.path
+		results_dir = os.path.join(script_dir, 'Output_XML_to_ChiSquareTransmPlot/')
+		if not os.path.isdir(results_dir):
+			os.makedirs(results_dir)
+		everything_df.to_csv(results_dir + 'everything_normalized_df.txt', sep='\t')
+		meta_df.to_csv(results_dir + 'meta_normalized_df.txt', sep='\t')
+	else:
+		script_dir = args.path
+		results_dir = os.path.join(script_dir, 'Output_XML_to_ChiSquareTransmPlot/')
+		if not os.path.isdir(results_dir):
+			os.makedirs(results_dir)
+		everything_df.to_csv(results_dir + 'everything_df.txt', sep='\t')
+		meta_df.to_csv(results_dir + 'meta_df.txt', sep='\t')
 
 	print('Process Complete!')
 
