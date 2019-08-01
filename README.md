@@ -1,4 +1,4 @@
-# Overview of Maize Scanner
+# Overview of Maize Scanner :corn:
 This repository is a group of scripts and data to analyze an ear of maize. Each script can be cloned and run in the terminal and uses argparse as argument parser.</br>
 Scripts and the order they should be run are outlined below.
 
@@ -33,9 +33,7 @@ pysal https://pysal.org/install</br>
     percent transmission for each window, regression, and ear statistics. Also outputs 'meta_df.txt' which contains overall 
     ear stats and p-values. Also outputs 'everything_df.txt' which contains all window calculations and p values for each window for
     each xml file. .txt files are tab delimited use to reconvert to new pandas dataframe in later scripts. </br>
-    
-   Example of positional transmission plot:
-   ![Positional Transmission Plot](Users/elysevischulis/PycharmProjects/MaizeScanner/Output_XML_to_ChiSquareTransmPlot/Transmission_Norm_plots/X4-6x402.png)
+
     
 ### 2. Family_Graphs.py
 
