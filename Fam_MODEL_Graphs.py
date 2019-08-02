@@ -13,8 +13,8 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from scipy import stats
 
-# setting up argparse arguments
-parser = argparse.ArgumentParser(description='Given meta df, start and stop values for male families, returns plots')
+# Setting up argparse arguments
+parser = argparse.ArgumentParser(description='Given everything df, start and stop values for male families, returns plots')
 parser.add_argument('-i', '--input_df', metavar='', help='Input meta dataframe filename.', type=str)
 parser.add_argument('-sv', '--start_value', metavar='', help='Starting number for male family plots', type=int)
 parser.add_argument('-ev', '--end_value', metavar='', help='Ending number for male family plots', type=int)
@@ -231,6 +231,7 @@ def everything_norm_everything_graph(input_df, path):
 
     sns.set(rc={'figure.figsize': (11.7, 8.27)})
     plt.ylim(0, 1)
+    plt.xlim(0, 1)
     ax.yaxis.grid(True)
     ax.set(yticks=[0, 0.25, 0.5, 0.75, 1])
 
@@ -295,6 +296,7 @@ def only400s_norm_plot(input_df, path):
                 scatter_kws={"color": "green", "alpha": 0.006, "s": 20}, line_kws={"color": "black"})
     sns.set(rc={'figure.figsize': (11.7, 8.27)})
     plt.ylim(0, 1)
+    plt.xlim(0, 1)
     ax.yaxis.grid(True)
     ax.set(yticks=[0, 0.25, 0.5, 0.75, 1])
 
@@ -359,6 +361,7 @@ def female_cross_norm_plot(input_df, path):
 
     sns.set(rc={'figure.figsize': (11.7, 8.27)})
     plt.ylim(0, 1)
+    plt.xlim(0, 1)
     ax.yaxis.grid(True)
     ax.set(yticks=[0, 0.25, 0.5, 0.75, 1])
 

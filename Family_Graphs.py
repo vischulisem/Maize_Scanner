@@ -15,7 +15,7 @@ from scipy import stats
 
 
 # setting up argparse arguments
-parser = argparse.ArgumentParser(description='Given meta df, start and stop values for male families, returns plots')
+parser = argparse.ArgumentParser(description='Given everything df, start and stop values for male families, returns plots')
 parser.add_argument('-i', '--input_df', metavar='', help='Input meta dataframe filename.', type=str)
 parser.add_argument('-sv', '--start_value', metavar='', help='Starting number for male family plots, must be in 400s', default=411, type=int)
 parser.add_argument('-ev', '--end_value', metavar='', help='Ending number for male family plots, must be in 400s', default=499, type=int)

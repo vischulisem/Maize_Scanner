@@ -740,7 +740,7 @@ def pval_norm_plot(final_df, xml, path):
 	# Creating legend for colored p value line
 	red_patch = mpatches.Patch(color='red', label='> p = 0.05')
 	blue_patch = mpatches.Patch(color='blue', label='< p = 0.05')
-	plt.legend(handles=[red_patch, blue_patch], loc='center left', bbox_to_anchor=(1, 0.5))
+	ax.legend(handles=[red_patch, blue_patch], loc='center left', bbox_to_anchor=(1, 0.5))
 
 	pv_plot = lc.get_figure()
 
