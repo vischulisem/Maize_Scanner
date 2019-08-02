@@ -94,13 +94,14 @@ pysal https://pysal.org/install</br>
      -p will allow you to select path for saving files. Default is current path.</br>
     
    ### 3. Histogram_Model.py
+   From model_meta_df.txt or model_normalized_meta_df.txt, creates 3 histograms (R-squared, slope, and p-value) based on regression statistics for all models. </br>
+  This script accepts the model_meta_df.txt as an argument. Optional arguments are '-p' to determine path where plots are saved. Default is current path.
 
 ## Spatial Statistics
 Beginning scripts to analyze the spatial distribution of kernels across the ear. 
 
   ### 1. Spatial_stats.py
-  From model_meta_df.txt or model_normalized_meta_df.txt, creates 3 histograms (R-squared, slope, and p-value) based on regression statistics for all models. </br>
-  This script accepts the model_meta_df.txt as an argument. Optional arguments are '-p' to determine path where plots are saved. Default is current path. 
+ 
 
 ## Authors
 Elyse Vischulis
