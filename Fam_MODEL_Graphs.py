@@ -247,17 +247,17 @@ def everything_norm_everything_graph(input_df, path):
     ax.spines['right'].set_color('black')
     ax.spines['left'].set_color('black')
 
-    # fig.canvas.draw()
-    #
-    # labels = [item.get_text() for item in ax.get_xticklabels()]
-    # labels[6] = 'Top'
-    # labels[1] = 'Bottom'
-    # labels[2] = 0.2
-    # labels[3] = 0.4
-    # labels[4] = 0.6
-    # labels[5] = 0.8
-    #
-    # ax.set_xticklabels(labels)
+    fig.canvas.draw()
+
+    labels = [item.get_text() for item in ax.get_xticklabels()]
+    labels[6] = 'Top'
+    labels[1] = 'Bottom'
+    labels[2] = 0.2
+    labels[3] = 0.4
+    labels[4] = 0.6
+    labels[5] = 0.8
+
+    ax.set_xticklabels(labels)
 
     # Saving figure in new directory with cross file name
     fig = plt.gcf()
