@@ -742,6 +742,17 @@ def pval_norm_plot(final_df, xml, path):
 	blue_patch = mpatches.Patch(color='blue', label='< p = 0.05')
 	ax.legend(handles=[red_patch, blue_patch], loc='center left', bbox_to_anchor=(1, 0.5))
 
+	fig.canvas.draw()
+
+	labels = [item.get_text() for item in ax.get_xticklabels()]
+	labels[6] = 'Top'
+	labels[1] = 'Bottom'
+	labels[2] = 0.2
+	labels[3] = 0.4
+	labels[4] = 0.6
+	labels[5] = 0.8
+
+	ax.set_xticklabels(labels)
 	pv_plot = lc.get_figure()
 
 	# Create directory to save plots

@@ -454,6 +454,17 @@ def pval_plot(final_df, xml, overall_kernel_total, overall_perc_trans, overall_p
 
 	ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=12, fontweight='bold', verticalalignment='top', bbox={'facecolor': 'white', 'alpha': 1, 'pad': 10, 'edgecolor': 'black'})
 
+	fig.canvas.draw()
+
+	labels = [item.get_text() for item in ax.get_xticklabels()]
+	labels[6] = 'Top'
+	labels[1] = 'Bottom'
+	labels[2] = 0.2
+	labels[3] = 0.4
+	labels[4] = 0.6
+	labels[5] = 0.8
+
+	ax.set_xticklabels(labels)
 	# Getting the figure for saving etc
 	pv_plot = lc.get_figure()
 

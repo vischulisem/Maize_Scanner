@@ -16,8 +16,6 @@ from scipy import stats
 # Setting up argparse arguments
 parser = argparse.ArgumentParser(description='Given everything df, start and stop values for male families, returns plots')
 parser.add_argument('-i', '--input_df', metavar='', help='Input meta dataframe filename.', type=str)
-parser.add_argument('-sv', '--start_value', metavar='', help='Starting number for male family plots', type=int)
-parser.add_argument('-ev', '--end_value', metavar='', help='Ending number for male family plots', type=int)
 parser.add_argument('-n', action='store_true', help='Will normalize x axis of transmission plots.')
 parser.add_argument('-p', '--path', metavar='', help='List path where you want files saved to.', default=os.getcwd(), type=str)
 args = parser.parse_args()
@@ -214,7 +212,6 @@ def female_cross_plot(input_df, path):
 def everything_norm_everything_graph(input_df, path):
     print(f'Starting everything plot...')
 
-    sns.set_style("white")
     # Reading in txt file as pandas df
     data = pd.read_csv(input_df, sep="\t")
     # Plotting begins
@@ -234,6 +231,7 @@ def everything_norm_everything_graph(input_df, path):
     plt.xlim(0, 1)
     ax.yaxis.grid(True)
     ax.set(yticks=[0, 0.25, 0.5, 0.75, 1])
+    ax.set(xticks=[0, 0.2, 0.4, 0.6, 0.8, 1])
 
     plt.title('Everything Norm Model Plot', fontsize=30, weight='bold', loc='center', verticalalignment='baseline')
     plt.xlabel('Normalized Window Position (pixels)', fontsize=18, weight='bold')
@@ -241,8 +239,28 @@ def everything_norm_everything_graph(input_df, path):
 
     plt.rcParams["font.weight"] = "bold"
     plt.rcParams["axes.labelweight"] = "bold"
-    # Saving figure
-    fig.get_figure()
+    ax.set_facecolor('white')
+    ax.yaxis.grid(color='gainsboro')
+
+    ax.spines['bottom'].set_color('black')
+    ax.spines['top'].set_color('black')
+    ax.spines['right'].set_color('black')
+    ax.spines['left'].set_color('black')
+
+    # fig.canvas.draw()
+    #
+    # labels = [item.get_text() for item in ax.get_xticklabels()]
+    # labels[6] = 'Top'
+    # labels[1] = 'Bottom'
+    # labels[2] = 0.2
+    # labels[3] = 0.4
+    # labels[4] = 0.6
+    # labels[5] = 0.8
+    #
+    # ax.set_xticklabels(labels)
+
+    # Saving figure in new directory with cross file name
+    fig = plt.gcf()
     script_dir = path
     results_dir = os.path.join(script_dir, 'Output_Fam_MODEL_Graphs/')
     if not os.path.isdir(results_dir):
@@ -276,7 +294,6 @@ def everything_norm_everything_graph(input_df, path):
 def only400s_norm_plot(input_df, path):
     print(f'Starting everything 400s plot...')
 
-    sns.set_style("white")
     # Reading in file as dataframe
     data = pd.read_csv(input_df, sep="\t")
     # Sorting through file name column
@@ -299,6 +316,7 @@ def only400s_norm_plot(input_df, path):
     plt.xlim(0, 1)
     ax.yaxis.grid(True)
     ax.set(yticks=[0, 0.25, 0.5, 0.75, 1])
+    ax.set(xticks=[0, 0.2, 0.4, 0.6, 0.8, 1])
 
     plt.title('Everything Norm MODEL 400s', fontsize=30, weight='bold', loc='center', verticalalignment='baseline')
     plt.xlabel('Normalized Window Position (pixels)', fontsize=18, weight='bold')
@@ -306,8 +324,28 @@ def only400s_norm_plot(input_df, path):
 
     plt.rcParams["font.weight"] = "bold"
     plt.rcParams["axes.labelweight"] = "bold"
-    # Saving figure
-    fig.get_figure()
+    ax.set_facecolor('white')
+    ax.yaxis.grid(color='gainsboro')
+
+    ax.spines['bottom'].set_color('black')
+    ax.spines['top'].set_color('black')
+    ax.spines['right'].set_color('black')
+    ax.spines['left'].set_color('black')
+
+    fig.canvas.draw()
+
+    labels = [item.get_text() for item in ax.get_xticklabels()]
+    labels[6] = 'Top'
+    labels[1] = 'Bottom'
+    labels[2] = 0.2
+    labels[3] = 0.4
+    labels[4] = 0.6
+    labels[5] = 0.8
+
+    ax.set_xticklabels(labels)
+
+    # Saving figure in new directory with cross file name
+    fig = plt.gcf()
     script_dir = path
     results_dir = os.path.join(script_dir, 'Output_Fam_MODEL_Graphs/')
     if not os.path.isdir(results_dir):
@@ -341,7 +379,6 @@ def only400s_norm_plot(input_df, path):
 def female_cross_norm_plot(input_df, path):
     print(f'Starting female plot...')
 
-    sns.set_style("white")
     # Reading in txt file as dataframe
     data = pd.read_csv(input_df, sep="\t")
     # Sorting through file names
@@ -364,6 +401,7 @@ def female_cross_norm_plot(input_df, path):
     plt.xlim(0, 1)
     ax.yaxis.grid(True)
     ax.set(yticks=[0, 0.25, 0.5, 0.75, 1])
+    ax.set(xticks=[0, 0.2, 0.4, 0.6, 0.8, 1])
 
     plt.title('Female Norm MODEL 400s Cross Plot', fontsize=30, weight='bold', loc='center', verticalalignment='baseline')
     plt.xlabel('Normalized Window Position (pixels)', fontsize=18, weight='bold')
@@ -371,8 +409,28 @@ def female_cross_norm_plot(input_df, path):
 
     plt.rcParams["font.weight"] = "bold"
     plt.rcParams["axes.labelweight"] = "bold"
-    # Saving Figure
-    fig.get_figure()
+    ax.set_facecolor('white')
+    ax.yaxis.grid(color='gainsboro')
+
+    ax.spines['bottom'].set_color('black')
+    ax.spines['top'].set_color('black')
+    ax.spines['right'].set_color('black')
+    ax.spines['left'].set_color('black')
+
+    fig.canvas.draw()
+
+    labels = [item.get_text() for item in ax.get_xticklabels()]
+    labels[1] = 'Bottom'
+    labels[2] = 0.2
+    labels[3] = 0.4
+    labels[4] = 0.6
+    labels[5] = 0.8
+    labels[6] = 'Top'
+
+    ax.set_xticklabels(labels)
+
+    # Saving figure in new directory with cross file name
+    fig = plt.gcf()
 
     script_dir = path
     results_dir = os.path.join(script_dir, 'Output_Fam_MODEL_Graphs/')
@@ -406,8 +464,8 @@ def female_cross_norm_plot(input_df, path):
 def main():
     if args.n:
         everything_norm_everything_graph(args.input_df, args.path)
-        only400s_norm_plot(args.input_df, args.path)
-        female_cross_norm_plot(args.input_df, args.path)
+        #only400s_norm_plot(args.input_df, args.path)
+        #female_cross_norm_plot(args.input_df, args.path)
     else:
         everything_everything_graph(args.input_df, args.path)
         only400s_plot(args.input_df, args.path)

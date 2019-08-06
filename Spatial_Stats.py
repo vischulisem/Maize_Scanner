@@ -57,11 +57,14 @@ def check_xml_error(input_xml):
 		count_7 = len(list(root_7))
 	except IndexError:
 		print('No root 7 in this file')
+		count_7 = 0
 
 	try:
 		root_8 = root[1][8]
+		count_8 = len(list(root_8))
 	except IndexError:
 		print('No root 8 in this file')
+		count_8 = 0
 
 	# Checking if anything exists in other types
 	if (count_4 > 1) or (count_5 > 1) or (count_6 > 1):
@@ -70,12 +73,12 @@ def check_xml_error(input_xml):
 	else:
 		result = 'False'
 	# If result = 'True then skipped in main()
-	return result, tree
+	return result, tree, count_7, count_8
 
 # Function that gets X, Y coord for each kernel and labels as fluor or nonfluor
 # Dataframe is outputted with this info
 # Overall ear stats calculated at end to be shown on pval_plots later
-def parse_xml(input_xml, tree):
+def parse_xml(input_xml, tree, count_7, count_8):
 	# Getting the root of the tree
 	root = tree.getroot()
 
@@ -85,14 +88,29 @@ def parse_xml(input_xml, tree):
 	# Pulling out the fluorescent and non-fluorescent children
 	fluorescent = root[1][1]
 	nonfluorescent = root[1][2]
-	purple = root[1][7]
-	yellow = root[1][8]
 
 	# Setting up some empty lists to move the coordinates from the xml into
 	fluor_x = []
 	fluor_y = []
 	nonfluor_x = []
 	nonfluor_y = []
+
+	# If something is listed in root 7...
+	if count_7 > 1:
+		purple = root[1][7]
+		# Getting the coordinates of the purple kernels
+		for child in purple:
+			if child.tag == 'Marker':
+				fluor_x.append(child.find('MarkerX').text)
+				fluor_y.append(child.find('MarkerY').text)
+	# If something is listed in root 8...
+	if count_8 > 1:
+		yellow = root[1][8]
+		# Getting the coordinates of the yellow kernels
+		for child in yellow:
+			if child.tag == 'Marker':
+				nonfluor_x.append(child.find('MarkerX').text)
+				nonfluor_y.append(child.find('MarkerY').text)
 
 	# Getting the coordinates of the fluorescent kernels
 	for child in fluorescent:
@@ -102,18 +120,6 @@ def parse_xml(input_xml, tree):
 
 	# Getting the coordinates of the non-fluorescent kernels
 	for child in nonfluorescent:
-		if child.tag == 'Marker':
-			nonfluor_x.append(child.find('MarkerX').text)
-			nonfluor_y.append(child.find('MarkerY').text)
-
-	# Getting the coordinates of the purple kernels
-	for child in purple:
-		if child.tag == 'Marker':
-			fluor_x.append(child.find('MarkerX').text)
-			fluor_y.append(child.find('MarkerY').text)
-
-	# Getting the coordinates of the yellow kernels
-	for child in yellow:
 		if child.tag == 'Marker':
 			nonfluor_x.append(child.find('MarkerX').text)
 			nonfluor_y.append(child.find('MarkerY').text)
@@ -135,7 +141,35 @@ def parse_xml(input_xml, tree):
 	df['X-Coordinate'] = df['X-Coordinate'].astype(np.int64)
 	df['Y-Coordinate'] = df['Y-Coordinate'].astype(np.int64)
 
-	return df, image_name_string
+	# Overall ear stats
+	# Counting total number of kernels per ear
+	overall_kernel_total = int(len(df.index))
+	# Calculating expected value for chi squared test
+	overall_expected = overall_kernel_total * 0.5
+
+	# Counting number of fluorescent
+	if any(df.Type == 'Fluorescent'):
+		x = df['Type'].value_counts()
+		overall_fluor_tot = x['Fluorescent']
+	else:
+		overall_fluor_tot = 0
+
+	# Calculating percent transmission for entire ear
+	overall_perc_trans = overall_fluor_tot/overall_kernel_total
+
+	# Counting number nonfluorescent
+	if any(df.Type == 'Non-Fluorescent'):
+		x = df['Type'].value_counts()
+		overall_nonfluor_tot = x['Non-Fluorescent']
+	else:
+		overall_nonfluor_tot = 0
+
+	# Chi squared test for entire ear..stats returned to be used in pval_plot and displayed in txt box
+	chi_stat = stats.chisquare([overall_fluor_tot, overall_nonfluor_tot], [overall_expected, overall_expected])
+	overall_pval = chi_stat[1]
+
+	return df
+
 
 def spatial_stat(df, image_name_string):
 	mtrx = df.as_matrix(columns=df.columns[2:])
@@ -174,10 +208,10 @@ def main():
 			print(f'Processing {fullpath}...')
 			if fullpath.endswith(".xml"):
 				with open(fullpath, 'r') as f:
-					result, tree = check_xml_error(f)
+					result, tree, count_7, count_8 = check_xml_error(f)
 					if result == 'True':
 						continue
-					dataframe, name = parse_xml(f, tree)
+					dataframe, name = parse_xml(f, tree, count_7, count_8)
 					dataframe2 = spatial_stat(dataframe, name)
 
 					total_stat_df = total_stat_df.append(dataframe2)
