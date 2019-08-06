@@ -33,6 +33,7 @@ pysal https://pysal.org/install</br>
     percent transmission for each window, regression, and ear statistics. Also outputs 'meta_df.txt' which contains overall 
     ear stats and p-values. Also outputs 'everything_df.txt' which contains all window calculations and p values for each window for
     each xml file. .txt files are tab delimited use to reconvert to new pandas dataframe in later scripts. </br>
+![X400x417-3m1](https://user-images.githubusercontent.com/52712211/62398816-a4d42380-b52e-11e9-9f3b-232c5fcbc4ca.png)
 
     
 ### 2. Family_Graphs.py
@@ -49,7 +50,11 @@ pysal https://pysal.org/install</br>
     -n will normalize x coordinates 'window_mean' for all graphs</br>
     -p will allow you to select path for saving files. Default is current path.</br>
     Outputs are plots saved as .png files. Male faimly plots are saved in new directory 'Male Plots/' with each family as plot 
-    name. 
+    name. </br>
+    ![everything_norm_plot](https://user-images.githubusercontent.com/52712211/62398922-fed4e900-b52e-11e9-94cb-5870abe7e0c8.png)</br>
+![Everything_norm_400](https://user-images.githubusercontent.com/52712211/62398933-03999d00-b52f-11e9-913e-b90652330639.png)</br>
+![Female 400s Norm Cross Plot](https://user-images.githubusercontent.com/52712211/62398938-07c5ba80-b52f-11e9-9a84-bdbb62dd053c.png)</br>
+![491](https://user-images.githubusercontent.com/52712211/62398948-0e543200-b52f-11e9-9524-1a754cf5b21c.png)</br>
     
   ### 3. Kern_Coord.py
   
@@ -81,6 +86,7 @@ pysal https://pysal.org/install</br>
     become dataframes in later scripts. 'meta_model_df.txt' contains overall ear statistics for each model. 'everything_model_df.txt'
     contains window calculations and chi square statistics for each ear. Again txt files are tab delimited. 
   
+  ![X400x417-3m1_model](https://user-images.githubusercontent.com/52712211/62398878-e238b100-b52e-11e9-8f41-a4b7d994a578.png)  
   ### 2. Fam_MODEL_Graphs.py 
   
    This script is nearly identicle to Family_Graphs.py</br>
@@ -92,11 +98,16 @@ pysal https://pysal.org/install</br>
      This script accepts 'everything_model_df.txt' as arguments. Outputs are saved graphs. Defaults are set for sv and ev. </br>
      -n will normalize x coordinates 'window_mean' for all graphs</br>
      -p will allow you to select path for saving files. Default is current path.</br>
-    
+    ![everything_norm_MODEL_plot](https://user-images.githubusercontent.com/52712211/62399016-48253880-b52f-11e9-910b-e1448c4498e4.png)</br>
+![Everything_400_norm_MODEL](https://user-images.githubusercontent.com/52712211/62399023-4bb8bf80-b52f-11e9-95ef-0c758df6771d.png)</br>
+![Female MODEL norm 400s Cross Plot](https://user-images.githubusercontent.com/52712211/62399030-4fe4dd00-b52f-11e9-92e5-8e2bd8f177aa.png)</br>
+
    ### 3. Histogram_Model.py
    From model_meta_df.txt or model_normalized_meta_df.txt, creates 3 histograms (R-squared, slope, and p-value) based on regression statistics for all models. </br>
-  This script accepts the model_meta_df.txt as an argument. Optional arguments are '-p' to determine path where plots are saved. Default is current path.
-
+  This script accepts the model_meta_df.txt as an argument. Optional arguments are '-p' to determine path where plots are saved. Default is current path. </br>
+![Model_Pvalue_Hist](https://user-images.githubusercontent.com/52712211/62399071-6c811500-b52f-11e9-8b00-28968ce9b77f.png)</br>
+![Model_Rsq_Hist](https://user-images.githubusercontent.com/52712211/62399072-6c811500-b52f-11e9-81b0-bb64aee5350d.png)</br>
+![Model_Slope_Hist](https://user-images.githubusercontent.com/52712211/62399073-6c811500-b52f-11e9-9888-f4a8ee2389d1.png)</br>
 ## Spatial Statistics
 Beginning scripts to analyze the spatial distribution of kernels across the ear. 
 
