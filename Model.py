@@ -15,9 +15,11 @@ import xml.etree.ElementTree as ET
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
+import statsmodels
 from scipy import stats
 import pylab as pl
 from matplotlib import collections as mc
+from statsmodels.stats.multitest import multipletests
 
 # Setting up argparse arguments
 parser = argparse.ArgumentParser(description='Given XML file, width, and steps, returns scatterplot')
@@ -27,6 +29,7 @@ parser.add_argument('-s', '--step_size', metavar='', help='Steps in pixels for w
 parser.add_argument('-n', action='store_true', help='Will normalize x axis of transmission plots.')
 parser.add_argument('-tk', '--total_kernels', metavar='', help='Determine threshold for total kernels on ear for skipping file.', default=50, type=int)
 parser.add_argument('-p', '--path', metavar='', help='List path where you want files saved to.', default=os.getcwd(), type=str)
+parser.add_argument('-a', action='store_true', help='Adjust p-values from chisquare test using Benjamini–Hochberg procedure.')
 args = parser.parse_args()
 
 # This function checks XML file for types 4-8 and skips if present
@@ -320,13 +323,13 @@ def sliding_window(df, w, s, filename):
 
 # Computes chisquare test on fluor and nonfluor for each window compared to
 # total kernels per window. Dataframe with p-values outputted.
-def chisquare_test(kern_count_df):
+def chisquare_test(kern_count_df, argsa):
 	# Setting up index to start at 0
 	index = 0
 	# Deciding where to stop loop (at the last index)
 	end_index = kern_count_df.index[-1]
 	# Creating empty df to append each row from loop
-	temp_df = pd.DataFrame(columns='P-Value Comparison P2-Value Comparison2 P3-Value Comparison3 P4-Value Comparison4 P5-Value Comparison5'.split())
+	temp_df = pd.DataFrame(columns='P-Value P2-Value P3-Value P4-Value P5-Value'.split())
 
 	# Beginning of loop to calculate chi squared for each window
 	while index <= end_index:
@@ -343,12 +346,6 @@ def chisquare_test(kern_count_df):
 		# Setting variable for p-value
 		pval = chi_stat[1]
 
-		# Creating new column with labels based on p-value
-		if pval <= 0.05:
-			p_input = '< p = 0.05'
-		else:
-			p_input = '> p = 0.05'
-
 		# Process repeated for each model
 		fluor2 = single_row['Fluor2'].values[0]
 		nonfluor2 = single_row['Nonfluor2'].values[0]
@@ -356,21 +353,11 @@ def chisquare_test(kern_count_df):
 		chi2_stat = stats.chisquare([fluor2, nonfluor2], [expected, expected])
 		pval2 = chi2_stat[1]
 
-		if pval2 <= 0.05:
-			p2_input = '< p = 0.05'
-		else:
-			p2_input = '> p = 0.05'
-
 		fluor3 = single_row['Fluor3'].values[0]
 		nonfluor3 = single_row['Nonfluor3'].values[0]
 
 		chi3_stat = stats.chisquare([fluor3, nonfluor3], [expected, expected])
 		pval3 = chi3_stat[1]
-
-		if pval3 <= 0.05:
-			p3_input = '< p = 0.05'
-		else:
-			p3_input = '> p = 0.05'
 
 		fluor4 = single_row['Fluor4'].values[0]
 		nonfluor4 = single_row['Nonfluor4'].values[0]
@@ -378,26 +365,16 @@ def chisquare_test(kern_count_df):
 		chi4_stat = stats.chisquare([fluor4, nonfluor4], [expected, expected])
 		pval4 = chi4_stat[1]
 
-		if pval4 <= 0.05:
-			p4_input = '< p = 0.05'
-		else:
-			p4_input = '> p = 0.05'
-
 		fluor5 = single_row['Fluor5'].values[0]
 		nonfluor5 = single_row['Nonfluor5'].values[0]
 
 		chi5_stat = stats.chisquare([fluor5, nonfluor5], [expected, expected])
 		pval5 = chi5_stat[1]
 
-		if pval5 <= 0.05:
-			p5_input = '< p = 0.05'
-		else:
-			p5_input = '> p = 0.05'
-
 		# Putting variables into list
-		data = [[pval, p_input, pval2, p2_input, pval3, p3_input, pval4, p4_input, pval5, p5_input]]
+		data = [[pval, pval2, pval3, pval4, pval5]]
 		# Putting list into dataframe (single row)
-		data_df = pd.DataFrame(data=data, columns='P-Value Comparison P2-Value Comparison2 P3-Value Comparison3 P4-Value Comparison4 P5-Value Comparison5'.split())
+		data_df = pd.DataFrame(data=data, columns='P-Value P2-Value P3-Value P4-Value P5-Value'.split())
 		# Appending to empty df outside of loop
 		temp_df = temp_df.append(data_df)
 		# Repeats for next row
@@ -407,12 +384,27 @@ def chisquare_test(kern_count_df):
 	temp_df = temp_df.reset_index(drop=True)
 	final_df = pd.concat([kern_count_df, temp_df], axis=1, sort=False)
 	final_df = final_df.reset_index(drop=True)
+	if argsa:
+		# Adjusting P values based on Benjamini–Hochberg procedure
+		phb = statsmodels.stats.multitest.multipletests(final_df['P-Value'], method='fdr_bh', is_sorted=False)
+		final_df['P-Value'] = phb[1]
 
+		phb2 = statsmodels.stats.multitest.multipletests(final_df['P2-Value'], method='fdr_bh', is_sorted=False)
+		final_df['P2-Value'] = phb2[1]
+
+		phb3 = statsmodels.stats.multitest.multipletests(final_df['P3-Value'], method='fdr_bh', is_sorted=False)
+		final_df['P3-Value'] = phb3[1]
+
+		phb4 = statsmodels.stats.multitest.multipletests(final_df['P4-Value'], method='fdr_bh', is_sorted=False)
+		final_df['P4-Value'] = phb4[1]
+
+		phb5 = statsmodels.stats.multitest.multipletests(final_df['P5-Value'], method='fdr_bh', is_sorted=False)
+		final_df['P5-Value'] = phb5[1]
 	return final_df
 # Plots a line for percent transmission across the ear
 # colored based on whether point is above or below p = 0.05
 # No normalization of x axis mean value but Normalized value added to df
-def pval_plot(final_df, xml, path):
+def pval_plot(final_df, xml, path, argsa):
 	# Hiding error message
 	plt.rcParams.update({'figure.max_open_warning': 0})
 	# Creating new column of 'window mean'
@@ -561,10 +553,16 @@ def pval_plot(final_df, xml, path):
 	ax.spines['right'].set_color('black')
 	ax.spines['left'].set_color('black')
 
-	# Creating legend for colored p value line
-	red_patch = mpatches.Patch(color='red', label='> p = 0.05')
-	blue_patch = mpatches.Patch(color='blue', label='< p = 0.05')
-	plt.legend(handles=[red_patch, blue_patch], loc='center left', bbox_to_anchor=(1, 0.5))
+	if argsa:
+		# Creating legend for colored p value line
+		red_patch = mpatches.Patch(color='red', label='> p adjusted = 0.05')
+		blue_patch = mpatches.Patch(color='blue', label='< p adjusted = 0.05')
+		plt.legend(handles=[red_patch, blue_patch], loc='center left', bbox_to_anchor=(1, 0.5))
+	else:
+		# Creating legend for colored p value line
+		red_patch = mpatches.Patch(color='red', label='> p = 0.05')
+		blue_patch = mpatches.Patch(color='blue', label='< p = 0.05')
+		plt.legend(handles=[red_patch, blue_patch], loc='center left', bbox_to_anchor=(1, 0.5))
 
 	pv_plot = lc.get_figure()
 
@@ -595,7 +593,7 @@ def pval_plot(final_df, xml, path):
 # Plots a line for percent transmission across the ear
 # colored based on whether point is above or below p = 0.05
 # Normalizes window mean x values
-def pval_norm_plot(final_df, xml, path):
+def pval_norm_plot(final_df, xml, path, argsa):
 	# Hiding error message
 	plt.rcParams.update({'figure.max_open_warning': 0})
 	# Creating new column of 'window mean'
@@ -737,10 +735,16 @@ def pval_norm_plot(final_df, xml, path):
 	ax.spines['right'].set_color('black')
 	ax.spines['left'].set_color('black')
 
-	# Creating legend for colored p value line
-	red_patch = mpatches.Patch(color='red', label='> p = 0.05')
-	blue_patch = mpatches.Patch(color='blue', label='< p = 0.05')
-	ax.legend(handles=[red_patch, blue_patch], loc='center left', bbox_to_anchor=(1, 0.5))
+	if argsa:
+		# Creating legend for colored p value line
+		red_patch = mpatches.Patch(color='red', label='> p adjusted = 0.05')
+		blue_patch = mpatches.Patch(color='blue', label='< p adjusted = 0.05')
+		ax.legend(handles=[red_patch, blue_patch], loc='center left', bbox_to_anchor=(1, 0.5))
+	else:
+		# Creating legend for colored p value line
+		red_patch = mpatches.Patch(color='red', label='> p = 0.05')
+		blue_patch = mpatches.Patch(color='blue', label='< p = 0.05')
+		ax.legend(handles=[red_patch, blue_patch], loc='center left', bbox_to_anchor=(1, 0.5))
 
 	fig.canvas.draw()
 
@@ -786,7 +790,7 @@ def main():
 	# Dataframe (saved to .txt file) for each file and their chisquare and regression stats
 	meta_df = pd.DataFrame(columns='File_Name Total_Kernels Percent_Transmission R-Squared P-Value Slope slope2 intercept2 r_value2 p_value2 slope3 intercept3 r_value3 p_value3 slope4 intercept4 r_value4 p_value4 slope5 intercept5 r_value5 p_value5'.split())
 	# Dataframe (saved to .txt file) for each file's name, window_mean, % transmission, pvalue, etc
-	everything_df = pd.DataFrame(columns='File Step_Size Window_Start Window_End Total_Kernels Total_Fluor Total_NonFluor Fluor2 Nonfluor2 Fluor3 Nonfluor3 Fluor4 Nonfluor4 Fluor5 Nonfluor5 P-Value Comparison P2-Value Comparison2 P3-Value Comparison3 P4-Value Comparison4 P5-Value Comparison5 window_mean Normalized_Window_Mean Percent_Transmission Percent_Transmission2 Percent_Transmission3 Percent_Transmission4 Percent_Transmission5'.split())
+	everything_df = pd.DataFrame(columns='File Step_Size Window_Start Window_End Total_Kernels Total_Fluor Total_NonFluor Fluor2 Nonfluor2 Fluor3 Nonfluor3 Fluor4 Nonfluor4 Fluor5 Nonfluor5 P-Value P2-Value P3-Value P4-Value P5-Value window_mean Normalized_Window_Mean Percent_Transmission Percent_Transmission2 Percent_Transmission3 Percent_Transmission4 Percent_Transmission5'.split())
 
 	if args.xml.endswith(".xml"):
 		result, tree, count_7, count_8 = check_xml_error(args.xml)
@@ -801,12 +805,12 @@ def main():
 		# Error checking for improper width or step size from sliding_window()
 		if (ans1 == 'True') or (ans2 == 'True') or (ans3 == 'True'):
 			sys.exit('Program Exit')
-		chi_df = chisquare_test(dataframe2)
+		chi_df = chisquare_test(dataframe2, args.a)
 		# If -n present, normalize x coord on plots
 		if args.n:
-			trans_plot, end_df = pval_norm_plot(chi_df, args.xml, args.path)
+			trans_plot, end_df = pval_norm_plot(chi_df, args.xml, args.path, args.a)
 		else:
-			trans_plot, end_df = pval_plot(chi_df, args.xml, args.path)
+			trans_plot, end_df = pval_plot(chi_df, args.xml, args.path, args.a)
 		everything_df = everything_df.append(chi_df)
 		everything_df = everything_df.reset_index(drop=True)
 		meta_df = meta_df.append(end_df)
@@ -829,12 +833,12 @@ def main():
 						# Error checking for improper width or step size from sliding_window()
 						if (ans1 == 'True') or (ans2 == 'True') or (ans3 == 'True'):
 							continue
-						chi_df = chisquare_test(dataframe2)
+						chi_df = chisquare_test(dataframe2, args.a)
 						# If -n present, normalize x coord on plots
 						if args.n:
-							trans_plot, end_df = pval_norm_plot(chi_df, filename, args.path)
+							trans_plot, end_df = pval_norm_plot(chi_df, filename, args.path, args.a)
 						else:
-							trans_plot, end_df = pval_plot(chi_df, filename, args.path)
+							trans_plot, end_df = pval_plot(chi_df, filename, args.path, args.a)
 						everything_df = everything_df.append(chi_df)
 						everything_df = everything_df.reset_index(drop=True)
 						meta_df = meta_df.append(end_df)

@@ -39,6 +39,7 @@ parser.add_argument('-s', '--step_size', metavar='', help='Steps in pixels for w
 parser.add_argument('-n', action='store_true', help='Will normalize x axis of transmission plots.')
 parser.add_argument('-tk', '--total_kernels', metavar='', help='Determine threshold for total kernels on ear for skipping file.', default=50, type=int)
 parser.add_argument('-p', '--path', metavar='', help='List path where you want files saved to.', default=os.getcwd(), type=str)
+parser.add_argument('-a', action='store_true', help='Adjust p-values from chisquare test using Benjamini–Hochberg procedure.')
 args = parser.parse_args()
 
 # This function checks XML file for types 4-8 and skips if present
@@ -300,7 +301,7 @@ def sliding_window(df, w, s, filename):
 
 # Computes chisquare test on fluor and nonfluor for each window compared to
 # total kernels per window. Dataframe with p-values outputted.
-def chisquare_test(kern_count_df):
+def chisquare_test(kern_count_df, argsa):
 	# Setting up index to start at 0
 	index = 0
 	# Deciding where to stop loop (at the last index)
@@ -337,16 +338,17 @@ def chisquare_test(kern_count_df):
 	temp_df = temp_df.reset_index(drop=True)
 	final_df = pd.concat([kern_count_df, temp_df], axis=1, sort=False)
 	final_df = final_df.reset_index(drop=True)
-	# Adjusting P values based on Benjamini–Hochberg procedure
-	phb = statsmodels.stats.multitest.multipletests(final_df['P-Value'], method='fdr_bh', is_sorted=False)
-	final_df['P-Value'] = phb[1]
+	if argsa:
+		# Adjusting P values based on Benjamini–Hochberg procedure
+		phb = statsmodels.stats.multitest.multipletests(final_df['P-Value'], method='fdr_bh', is_sorted=False)
+		final_df['P-Value'] = phb[1]
 
 	return final_df
 
 # Plots a line for percent transmission across the ear
 # colored based on whether point is above or below p = 0.05
 # Does normalize window mean x axis
-def pval_plot(final_df, xml, overall_kernel_total, overall_perc_trans, overall_pval, count_7, path):
+def pval_plot(final_df, xml, overall_kernel_total, overall_perc_trans, overall_pval, count_7, path, argsa):
 	# Hiding error message
 	plt.rcParams.update({'figure.max_open_warning': 0})
 
@@ -416,10 +418,16 @@ def pval_plot(final_df, xml, overall_kernel_total, overall_perc_trans, overall_p
 	ax.spines['right'].set_color('black')
 	ax.spines['left'].set_color('black')
 
-	# Key to label line colors
-	red_patch = mpatches.Patch(color='red', label='> p adjusted = 0.05')
-	blue_patch = mpatches.Patch(color='blue', label='< p adjusted = 0.05')
-	ax.legend(handles=[red_patch, blue_patch], loc='center left', bbox_to_anchor=(1, 0.5))
+	if argsa:
+		# Key to label line colors
+		red_patch = mpatches.Patch(color='red', label='> p adjusted = 0.05')
+		blue_patch = mpatches.Patch(color='blue', label='< p adjusted = 0.05')
+		ax.legend(handles=[red_patch, blue_patch], loc='center left', bbox_to_anchor=(1, 0.5))
+	else:
+		# Key to label line colors
+		red_patch = mpatches.Patch(color='red', label='> p = 0.05')
+		blue_patch = mpatches.Patch(color='blue', label='< p = 0.05')
+		ax.legend(handles=[red_patch, blue_patch], loc='center left', bbox_to_anchor=(1, 0.5))
 
 	# Creating a text box with overall stats for each graph
 	num_weird_trans = len(final_df[final_df['P-Value'] < 0.05])
@@ -495,7 +503,7 @@ def pval_plot(final_df, xml, overall_kernel_total, overall_perc_trans, overall_p
 # Plots a line for percent transmission across the ear
 # colored based on whether point is above or below p = 0.05
 # Doesn't normalize window mean x axis
-def pval_notnorm_plot(final_df, xml, overall_kernel_total, overall_perc_trans, overall_pval, count_7, path):
+def pval_notnorm_plot(final_df, xml, overall_kernel_total, overall_perc_trans, overall_pval, count_7, path, argsa):
 	# Hiding error message
 	plt.rcParams.update({'figure.max_open_warning': 0})
 
@@ -564,10 +572,16 @@ def pval_notnorm_plot(final_df, xml, overall_kernel_total, overall_perc_trans, o
 	ax.spines['right'].set_color('black')
 	ax.spines['left'].set_color('black')
 
-	# Key to label line colors
-	red_patch = mpatches.Patch(color='red', label='> p adjusted = 0.05')
-	blue_patch = mpatches.Patch(color='blue', label='< p adjusted = 0.05')
-	ax.legend(handles=[red_patch, blue_patch], loc='center left', bbox_to_anchor=(1, 0.5))
+	if argsa:
+		# Key to label line colors
+		red_patch = mpatches.Patch(color='red', label='> p adjusted = 0.05')
+		blue_patch = mpatches.Patch(color='blue', label='< p adjusted = 0.05')
+		ax.legend(handles=[red_patch, blue_patch], loc='center left', bbox_to_anchor=(1, 0.5))
+	else:
+		# Key to label line colors
+		red_patch = mpatches.Patch(color='red', label='> p = 0.05')
+		blue_patch = mpatches.Patch(color='blue', label='< p = 0.05')
+		ax.legend(handles=[red_patch, blue_patch], loc='center left', bbox_to_anchor=(1, 0.5))
 
 	# Creating a text box with overall stats for each graph
 	num_weird_trans = len(final_df[final_df['Comparison'] == '< p = 0.05'])
@@ -655,13 +669,13 @@ def main():
 		dataframe2, ans1, ans2, ans3 = sliding_window(dataframe, args.width, args.step_size, args.xml)
 		if (ans1 == 'True') or (ans2 == 'True') or (ans3 == 'True'):
 			sys.exit('Program Exit')
-		chi_df = chisquare_test(dataframe2)
+		chi_df = chisquare_test(dataframe2, args.a)
 		if args.n:
 			trans_plot, end_df = pval_plot(chi_df, args.xml, overall_kernel_total, overall_perc_trans, overall_pval,
-										   count_7, args.path)
+										   count_7, args.path, args.a)
 		else:
 			trans_plot, end_df = pval_notnorm_plot(chi_df, args.xml, overall_kernel_total, overall_perc_trans,
-												   overall_pval, count_7, args.path)
+												   overall_pval, count_7, args.path, args.a)
 		everything_df = everything_df.append(chi_df)
 		everything_df = everything_df.reset_index(drop=True)
 		meta_df = meta_df.append(end_df)
@@ -690,12 +704,12 @@ def main():
 						dataframe2, ans1, ans2, ans3 = sliding_window(dataframe, args.width, args.step_size, filename)
 						if (ans1 == 'True') or (ans2 == 'True') or (ans3 == 'True'):
 							continue
-						chi_df = chisquare_test(dataframe2)
+						chi_df = chisquare_test(dataframe2, args.a)
 						if args.n:
-							trans_plot, end_df = pval_plot(chi_df, filename, overall_kernel_total, overall_perc_trans, overall_pval, count_7, args.path)
+							trans_plot, end_df = pval_plot(chi_df, filename, overall_kernel_total, overall_perc_trans, overall_pval, count_7, args.path, args.a)
 						else:
 							trans_plot, end_df = pval_notnorm_plot(chi_df, filename, overall_kernel_total, overall_perc_trans,
-														   overall_pval, count_7, args.path)
+														   overall_pval, count_7, args.path, args.a)
 						everything_df = everything_df.append(chi_df)
 						everything_df = everything_df.reset_index(drop=True)
 						meta_df = meta_df.append(end_df)

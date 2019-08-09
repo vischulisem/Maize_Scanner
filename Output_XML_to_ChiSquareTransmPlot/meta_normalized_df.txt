@@ -1,0 +1,2 @@
+	File_Name	Total_Kernels	Percent_Transmission	R-Squared	P-Value	Slope
+0	X401x492-2m1	619	15.014539579967689	0.5557896825338652	8.217e-111	0.2843
