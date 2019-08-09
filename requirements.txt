@@ -1,3 +1,4 @@
+statsmodels
 pandas
 seaborn
 scipy

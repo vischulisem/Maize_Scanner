@@ -24,9 +24,11 @@ import xml.etree.ElementTree as ET
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
+import statsmodels
 from scipy import stats
 import pylab as pl
 from matplotlib import collections as mc
+from statsmodels.stats.multitest import multipletests
 
 
 # Setting up argparse arguments
@@ -304,7 +306,7 @@ def chisquare_test(kern_count_df):
 	# Deciding where to stop loop (at the last index)
 	end_index = kern_count_df.index[-1]
 	# Creating empty df to append each row from loop
-	temp_df = pd.DataFrame(columns='P-Value Comparison'.split())
+	temp_df = pd.DataFrame(columns='P-Value'.split())
 
 	# Beginning of loop to calculate chi squared for each window
 	while index <= end_index:
@@ -322,16 +324,10 @@ def chisquare_test(kern_count_df):
 		# Setting variable for p-value
 		pval = chi_stat[1]
 
-		# Creating new column with labels based on p-value
-		if pval <= 0.05:
-			p_input = '< p = 0.05'
-		else:
-			p_input = '> p = 0.05'
-
 		# Putting variables into list
-		data = [[pval, p_input]]
+		data = [[pval]]
 		# Putting list into dataframe (single row)
-		data_df = pd.DataFrame(data=data, columns='P-Value Comparison'.split())
+		data_df = pd.DataFrame(data=data, columns='P-Value'.split())
 		# Appending to empty df outside of loop
 		temp_df = temp_df.append(data_df)
 		# Repeats for next row
@@ -341,6 +337,9 @@ def chisquare_test(kern_count_df):
 	temp_df = temp_df.reset_index(drop=True)
 	final_df = pd.concat([kern_count_df, temp_df], axis=1, sort=False)
 	final_df = final_df.reset_index(drop=True)
+	# Adjusting P values based on Benjamini–Hochberg procedure
+	phb = statsmodels.stats.multitest.multipletests(final_df['P-Value'], method='fdr_bh', is_sorted=False)
+	final_df['P-Value'] = phb[1]
 
 	return final_df
 
@@ -418,12 +417,12 @@ def pval_plot(final_df, xml, overall_kernel_total, overall_perc_trans, overall_p
 	ax.spines['left'].set_color('black')
 
 	# Key to label line colors
-	red_patch = mpatches.Patch(color='red', label='> p = 0.05')
-	blue_patch = mpatches.Patch(color='blue', label='< p = 0.05')
+	red_patch = mpatches.Patch(color='red', label='> p adjusted = 0.05')
+	blue_patch = mpatches.Patch(color='blue', label='< p adjusted = 0.05')
 	ax.legend(handles=[red_patch, blue_patch], loc='center left', bbox_to_anchor=(1, 0.5))
 
 	# Creating a text box with overall stats for each graph
-	num_weird_trans = len(final_df[final_df['Comparison'] == '< p = 0.05'])
+	num_weird_trans = len(final_df[final_df['P-Value'] < 0.05])
 	num_tkern = int(len(final_df))
 
 	window_stat = num_weird_trans / num_tkern
@@ -566,8 +565,8 @@ def pval_notnorm_plot(final_df, xml, overall_kernel_total, overall_perc_trans, o
 	ax.spines['left'].set_color('black')
 
 	# Key to label line colors
-	red_patch = mpatches.Patch(color='red', label='> p = 0.05')
-	blue_patch = mpatches.Patch(color='blue', label='< p = 0.05')
+	red_patch = mpatches.Patch(color='red', label='> p adjusted = 0.05')
+	blue_patch = mpatches.Patch(color='blue', label='< p adjusted = 0.05')
 	ax.legend(handles=[red_patch, blue_patch], loc='center left', bbox_to_anchor=(1, 0.5))
 
 	# Creating a text box with overall stats for each graph
@@ -637,7 +636,7 @@ def main():
 	# Dataframe (saved to .txt file) for each file and their chisquare and regression stats
 	meta_df = pd.DataFrame(columns='File_Name Total_Kernels Percent_Transmission R-Squared P-Value Slope'.split())
 	# Dataframe (saved to .txt file) for each file's name, window_mean, % transmission, pvalue, etc
-	everything_df = pd.DataFrame(columns='File Step_Size Window_Start Window_End Total_Kernels Total_Fluor Total_NonFluor P-Value Comparison window_mean Normalized_Window_Mean Percent_Transmission'.split())
+	everything_df = pd.DataFrame(columns='File Step_Size Window_Start Window_End Total_Kernels Total_Fluor Total_NonFluor P-Value window_mean Normalized_Window_Mean Percent_Transmission'.split())
 
 # Processing single file as argument
 	if args.xml.endswith(".xml"):

@@ -250,12 +250,12 @@ def everything_norm_everything_graph(input_df, path):
     fig.canvas.draw()
 
     labels = [item.get_text() for item in ax.get_xticklabels()]
-    labels[6] = 'Top'
-    labels[1] = 'Bottom'
-    labels[2] = 0.2
-    labels[3] = 0.4
-    labels[4] = 0.6
-    labels[5] = 0.8
+    labels[5] = 'Top'
+    labels[1] = 0.2
+    labels[2] = 0.4
+    labels[3] = 0.6
+    labels[4] = 0.8
+    labels[0] = 'Bottom'
 
     ax.set_xticklabels(labels)
 
@@ -335,12 +335,12 @@ def only400s_norm_plot(input_df, path):
     fig.canvas.draw()
 
     labels = [item.get_text() for item in ax.get_xticklabels()]
-    labels[6] = 'Top'
-    labels[1] = 'Bottom'
-    labels[2] = 0.2
-    labels[3] = 0.4
-    labels[4] = 0.6
-    labels[5] = 0.8
+    labels[5] = 'Top'
+    labels[1] = 0.2
+    labels[2] = 0.4
+    labels[3] = 0.6
+    labels[4] = 0.8
+    labels[0] = 'Bottom'
 
     ax.set_xticklabels(labels)
 
@@ -420,12 +420,12 @@ def female_cross_norm_plot(input_df, path):
     fig.canvas.draw()
 
     labels = [item.get_text() for item in ax.get_xticklabels()]
-    labels[1] = 'Bottom'
-    labels[2] = 0.2
-    labels[3] = 0.4
-    labels[4] = 0.6
-    labels[5] = 0.8
-    labels[6] = 'Top'
+    labels[5] = 'Top'
+    labels[1] = 0.2
+    labels[2] = 0.4
+    labels[3] = 0.6
+    labels[4] = 0.8
+    labels[0] = 'Bottom'
 
     ax.set_xticklabels(labels)
 
@@ -464,8 +464,8 @@ def female_cross_norm_plot(input_df, path):
 def main():
     if args.n:
         everything_norm_everything_graph(args.input_df, args.path)
-        #only400s_norm_plot(args.input_df, args.path)
-        #female_cross_norm_plot(args.input_df, args.path)
+        only400s_norm_plot(args.input_df, args.path)
+        female_cross_norm_plot(args.input_df, args.path)
     else:
         everything_everything_graph(args.input_df, args.path)
         only400s_plot(args.input_df, args.path)
