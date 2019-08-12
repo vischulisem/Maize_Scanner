@@ -1,9 +1,25 @@
 #!/usr/local/bin/python3
 
+# This script can be used to save XML file coordinates to a tab-delimited text file
+# The text file can easily be imported as a pandas dataframe or used in other coding
+# environments such as R.
+# Can take single XML or directory as argument. Will create a single text file for all xml
+# Given
+
+import sys
+import os
 import numpy as np
 import xml.etree.ElementTree as ET
 import pandas as pd
+import argparse
 
+# Setting up argparse arguments
+parser = argparse.ArgumentParser(description='Given XML file, width, and steps, returns scatterplot')
+parser.add_argument('-x', '--xml', metavar='', help='Input XML filename.', type=str)
+parser.add_argument('-w', '--width', metavar='', help='Width in pixels for the length of the window.', default=400, type=int)
+parser.add_argument('-s', '--step_size', metavar='', help='Steps in pixels for window movement.', default=2, type=int)
+parser.add_argument('-p', '--path', metavar='', help='List path where you want files saved to.', default=os.getcwd(), type=str)
+args = parser.parse_args()
 
 # This function checks XML file for types 4-8 and skips if present
 def check_xml_error(input_xml):
@@ -128,8 +144,40 @@ def parse_xml(input_xml, tree, count_7, count_8):
     df['X-Coordinate'] = df['X-Coordinate'].astype(np.int64)
     df['Y-Coordinate'] = df['Y-Coordinate'].astype(np.int64)
 
-    df.to_csv('xml_coord.txt', sep='\t')
     return df
 
-thing, tree, count_7, count_8 = check_xml_error("/Users/elysevischulis/PycharmProjects/Maize_Scanner/Data for Analysis/Single XML/X401x492-2m1.xml")
-thing2 = parse_xml(thing, tree, count_7, count_8)
+# Running function
+# if - process single xml
+# else - process directory of xml
+# Saves all coordinates to single .txt file
+def main():
+    # Empty dataframe for saving to text file
+    empty_df = pd.DataFrame(columns='File Type X-Coordinate Y-Coordinate'.split())
+    if args.xml.endswith(".xml"):
+        # Check xml error function
+        result, tree, count_7, count_8 = check_xml_error(args.xml)
+        if result == 'True':
+            sys.exit('Program Exit')
+        print(f'Processing {args.xml}...')
+        dataframe = parse_xml(args.xml, tree, count_7, count_8)
+        empty_df = empty_df.append(dataframe)
+        empty_df = empty_df.reset_index(drop=True)
+    else:
+        for roots, dirs, files in os.walk(args.xml):
+            for filename in files:
+                fullpath = os.path.join(args.xml, filename)
+                print(f'Processing {fullpath}...')
+                if fullpath.endswith(".xml"):
+                    with open(fullpath, 'r') as f:
+                        result, tree, count_7, count_8 = check_xml_error(f)
+                        if result == 'True':
+                            continue
+                        dataframe = parse_xml(f, tree, count_7, count_8)
+                        empty_df = empty_df.append(dataframe)
+                        empty_df = empty_df.reset_index(drop=True)
+    # Saving to text file tab delimited
+    empty_df.to_csv('xml_coord.txt', sep='\t')
+    print('Process Complete!')
+
+if __name__ == '__main__':
+    main()

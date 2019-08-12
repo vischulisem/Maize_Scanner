@@ -15,8 +15,7 @@ import seaborn as sns
 from scipy import stats
 import matplotlib.patches as mpatches
 
-
-# setting up argparse arguments
+# Setting up argparse arguments
 parser = argparse.ArgumentParser(description='Given everything df, start and stop values for male families, returns plots')
 parser.add_argument('-i', '--input_df', metavar='', help='Input meta dataframe filename.', type=str)
 parser.add_argument('-t', '--table8', metavar='', help='Supplemental table 8 for expression and transmission data.', type=str)
@@ -43,7 +42,7 @@ def everything_everything_graph(input_df, path):
     plt.title('Everything Plot', fontsize=30, weight='bold', loc='center', verticalalignment='baseline')
     plt.xlabel('Window Position (pixels)', fontsize=18, weight='bold')
     plt.ylabel('Percent Transmission', fontsize=18, weight='bold')
-
+    # Setting text font to bold
     plt.rcParams["font.weight"] = "bold"
     plt.rcParams["axes.labelweight"] = "bold"
     # Saving figure
@@ -116,8 +115,7 @@ def female_cross_plot(input_df, path):
     # Sorting through file names
     data = data[data['File'].str.contains('x4')]
     # Plotting begins
-    female = sns.regplot(x=data["window_mean"], y=data["Percent_Transmission"], fit_reg=True,
-                            scatter_kws={"color": "darkmagenta", "alpha": 0.006, "s": 20}, line_kws={"color": "black"})
+    female = sns.regplot(x=data["window_mean"], y=data["Percent_Transmission"], fit_reg=True, scatter_kws={"color": "darkmagenta", "alpha": 0.006, "s": 20}, line_kws={"color": "black"})
     sns.set(rc={'figure.figsize': (11.7, 8.27)})
     plt.ylim(0, 1)
     female.yaxis.grid(True)
@@ -147,7 +145,7 @@ def female_cross_plot(input_df, path):
 
     return female_plot
 
-# Plots everything in .txt file
+# Plots everything in .txt file with normalized x axis
 def everything_norm_everything_graph(input_df, path):
     print(f'Starting everything plot...')
 
@@ -166,14 +164,15 @@ def everything_norm_everything_graph(input_df, path):
     plt.title('Everything Norm Plot', fontsize=30, weight='bold', loc='center', verticalalignment='baseline')
     plt.xlabel('Normalized Window Position (pixels)', fontsize=18, weight='bold')
     plt.ylabel('Percent Transmission', fontsize=18, weight='bold')
-
+    # Bold text
     plt.rcParams["font.weight"] = "bold"
     plt.rcParams["axes.labelweight"] = "bold"
+    # Drawing black box around plot
     ax.spines['bottom'].set_color('black')
     ax.spines['top'].set_color('black')
     ax.spines['right'].set_color('black')
     ax.spines['left'].set_color('black')
-
+    # Labelling x axis with bottom and top of ear
     fig.canvas.draw()
 
     labels = [item.get_text() for item in ax.get_xticklabels()]
@@ -204,7 +203,7 @@ def everything_norm_everything_graph(input_df, path):
 
     return everything_ev_plot
 
-# Plots only xml files in .txt with X4..x4...
+# Plots only xml files in .txt with X4..x4... with normalized x axis
 def only400s_norm_plot(input_df, path):
     print(f'Starting everything 400s plot...')
 
@@ -226,15 +225,15 @@ def only400s_norm_plot(input_df, path):
     plt.title('Everything Norm 400s', fontsize=30, weight='bold', loc='center', verticalalignment='baseline')
     plt.xlabel('Normalized Window Position (pixels)', fontsize=18, weight='bold')
     plt.ylabel('Percent Transmission', fontsize=18, weight='bold')
-
+    # Bold text
     plt.rcParams["font.weight"] = "bold"
     plt.rcParams["axes.labelweight"] = "bold"
-
+    # Drawing black box around plot
     ax.spines['bottom'].set_color('black')
     ax.spines['top'].set_color('black')
     ax.spines['right'].set_color('black')
     ax.spines['left'].set_color('black')
-
+    # Labeling top and bottom of ear on x axis
     fig.canvas.draw()
 
     labels = [item.get_text() for item in ax.get_xticklabels()]
@@ -264,7 +263,7 @@ def only400s_norm_plot(input_df, path):
 
     return justfours_plot
 
-# Plots only xml files named ....x4....
+# Plots only xml files named ....x4.... with normalized x axis
 def female_cross_norm_plot(input_df, path):
     print(f'Starting female plot...')
     fig, ax = plt.subplots()
@@ -274,8 +273,7 @@ def female_cross_norm_plot(input_df, path):
     # Sorting through file names
     data = data[data['File'].str.contains('x4')]
     # Plotting begins
-    sns.regplot(x=data["Normalized_Window_Mean"], y=data["Percent_Transmission"], fit_reg=True,
-                            scatter_kws={"color": "darkmagenta", "alpha": 0.006, "s": 20}, line_kws={"color": "black"})
+    sns.regplot(x=data["Normalized_Window_Mean"], y=data["Percent_Transmission"], fit_reg=True, scatter_kws={"color": "darkmagenta", "alpha": 0.006, "s": 20}, line_kws={"color": "black"})
     sns.set(rc={'figure.figsize': (11.7, 8.27)})
     plt.ylim(0, 1)
     ax.yaxis.grid(True)
@@ -286,14 +284,15 @@ def female_cross_norm_plot(input_df, path):
     plt.ylabel('Percent Transmission', fontsize=18, weight='bold')
     ax.set_facecolor('white')
     ax.yaxis.grid(color='gainsboro')
+    # Bold text
     plt.rcParams["font.weight"] = "bold"
     plt.rcParams["axes.labelweight"] = "bold"
-
+    # Drawing black box around plot
     ax.spines['bottom'].set_color('black')
     ax.spines['top'].set_color('black')
     ax.spines['right'].set_color('black')
     ax.spines['left'].set_color('black')
-
+    # Labeling top and bottom of ear on x axis
     fig.canvas.draw()
 
     labels = [item.get_text() for item in ax.get_xticklabels()]
@@ -361,7 +360,7 @@ def male_fam_plot(input_df, low, high, path):
             reg_y = data['Percent_Transmission'].values
             slope, intercept, r_value, p_value, std_err = stats.linregress(reg_x, reg_y)
             r2 = r_value ** 2
-
+            # Putting stats for each family in dataframe for use in later scripts
             reg_xx = data['Normalized_Window_Mean'].values.tolist()
             reg_yy = data['Percent_Transmission'].values.tolist()
             llist = [str(i)] * len(reg_xx)
@@ -370,13 +369,13 @@ def male_fam_plot(input_df, low, high, path):
             big_reg_df = big_reg_df.append(reg_df)
             big_reg_df = big_reg_df.reset_index(drop=True)
 
-            # Plotting regression line
+            # Plotting regression line for all files in fam together
             plt.plot(reg_x, intercept + slope * reg_x, 'r', label='fitted line', color='red', linewidth=3,
                      dashes=[5, 3])
 
-            # Creating empty df so that mean rsquared for each line can be displayed
+            # Creating empty df so that mean regression stats for each line can be displayed
             stat_df = pd.DataFrame(columns='Slope Intercept RSquared P-Value'.split())
-            # Iterating through each file name and plotting regression line
+            # Iterating through each file name and plotting regression line individually
             grps = data.groupby(['File'])
             for file, grp in grps:
                 iter_y = grp['Percent_Transmission']
@@ -408,12 +407,12 @@ def male_fam_plot(input_df, low, high, path):
             # Creating text box on graph
             ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=10, fontweight='bold',
                     verticalalignment='top', bbox={'facecolor': 'white', 'alpha': 1, 'pad': 10, 'edgecolor': 'black'})
-
+            # Drawing black box around plot
             ax.spines['bottom'].set_color('black')
             ax.spines['top'].set_color('black')
             ax.spines['right'].set_color('black')
             ax.spines['left'].set_color('black')
-
+            # Labelling top and bottom of ear on x axis
             fig.canvas.draw()
 
             labels = [item.get_text() for item in ax.get_xticklabels()]
@@ -444,23 +443,31 @@ def male_fam_plot(input_df, low, high, path):
     big_reg_df['Male_Fam'] = big_reg_df['Male_Fam'].astype(np.int64)
     return big_reg_df
 
+# Function to plot regression lines from each family colored by cell expression
+# Requires supplemental table 8 which was saved to txt file in Data_for_analysis folder
 def reg_exp(table8, big_reg_df, path):
+    # Reading table into dataframe
     eight_df = pd.read_csv(table8, sep="\t")
-
+    # Removing columns crossed through female
     eight_df = eight_df[eight_df['Mutant allele parent'] != 'female']
-
+    # Selecting columns we're interested in
     eight_df = eight_df.loc[:, ['Tracking number', 'Expression class', 'Adjusted p-value']]
+    # Renaming a column for combining
     eight_df = eight_df.rename({'Tracking number': 'Male_Fam'}, axis=1)
+    # Converting values to int for combining
     eight_df['Male_Fam'] = eight_df['Male_Fam'].astype(np.int64)
+    # Merge two dfs to giant df along 'Male_Fam' column
     merged_df = big_reg_df.merge(eight_df, how='inner', on=['Male_Fam'])
 
+    # Plotting begins of regression line for each male family
+    # In loop, groups by male fam and plots line
     fig, ax = plt.subplots()
     grps = merged_df.groupby(['Male_Fam'])
     for file, grp in grps:
         iter_y = grp['Percent_Transmission']
         iter_x = grp['Normalized_Window_Mean']
         slope2, intercept2, r_value2, p_value2, std_err2 = stats.linregress(iter_x, iter_y)
-
+        # Coloring based on expression
         if (grp['Expression class'] == 'vegetative_cell_high').any():
             c = 'dimgrey'
             z = 1
@@ -471,6 +478,7 @@ def reg_exp(table8, big_reg_df, path):
             c = 'orange'
             z = 3
         plt.plot(iter_x, intercept2 + slope2 * iter_x, 'r', label='fitted line', color=c, linewidth=1.5, zorder=z)
+    # Graph aesthetics
     sns.set(rc={'figure.figsize': (11.7, 8.27)})
     plt.ylim(0, 1)
     ax.set(yticks=[0, 0.25, 0.5, 0.75, 1])
@@ -478,7 +486,7 @@ def reg_exp(table8, big_reg_df, path):
     plt.title('Expression Class Regression Plot', fontsize=30, weight='bold', loc='center', verticalalignment='baseline')
     plt.xlabel('Normalized Window Position (pixels)', fontsize=18, weight='bold')
     plt.ylabel('Percent Transmission', fontsize=18, weight='bold')
-
+    # Creating legend
     black_patch = mpatches.Patch(color='dimgrey', label='Vegetative Cell')
     aqua_patch = mpatches.Patch(color='deepskyblue', label='Seedling')
     orange_patch = mpatches.Patch(color='orange', label='Sperm Cell')
@@ -486,12 +494,12 @@ def reg_exp(table8, big_reg_df, path):
 
     ax.set_facecolor('white')
     ax.yaxis.grid(color='gainsboro')
-
+    # Drawing black box around plot
     ax.spines['bottom'].set_color('black')
     ax.spines['top'].set_color('black')
     ax.spines['right'].set_color('black')
     ax.spines['left'].set_color('black')
-
+    # labelling top and bottom of ear
     fig.canvas.draw()
 
     labels = [item.get_text() for item in ax.get_xticklabels()]
@@ -519,14 +527,17 @@ def reg_exp(table8, big_reg_df, path):
     plt.close()
     return merged_df
 
+# Plot male fam regression lines colored based on whether known transmission defect or not
+# Similar to previous function
 def reg_trans(merged_df, path):
+    # Plotting begins, cycle through each family and plot regression line
     fig, ax = plt.subplots()
     grps = merged_df.groupby(['Male_Fam'])
     for file, grp in grps:
         iter_y = grp['Percent_Transmission']
         iter_x = grp['Normalized_Window_Mean']
         slope2, intercept2, r_value2, p_value2, std_err2 = stats.linregress(iter_x, iter_y)
-
+        # Color based on adjusted p value
         if (grp['Adjusted p-value'] > 0.05).any():
             c = 'black'
             z = 1
@@ -542,19 +553,19 @@ def reg_trans(merged_df, path):
     plt.title('Transmission Defect Regression Plot', fontsize=30, weight='bold', loc='center', verticalalignment='baseline')
     plt.xlabel('Normalized Window Position (pixels)', fontsize=18, weight='bold')
     plt.ylabel('Percent Transmission', fontsize=18, weight='bold')
-
+    # Making legend
     black_patch = mpatches.Patch(color='black', label='No defect')
     red_patch = mpatches.Patch(color='red', label='Transmission defect')
     ax.legend(handles=[black_patch, red_patch], loc='center left', bbox_to_anchor=(1, 0.5))
 
     ax.set_facecolor('white')
     ax.yaxis.grid(color='gainsboro')
-
+    # Drawing black box around graph
     ax.spines['bottom'].set_color('black')
     ax.spines['top'].set_color('black')
     ax.spines['right'].set_color('black')
     ax.spines['left'].set_color('black')
-
+    # Labelling top and bottom of ear on x axis
     fig.canvas.draw()
 
     labels = [item.get_text() for item in ax.get_xticklabels()]
@@ -582,11 +593,14 @@ def reg_trans(merged_df, path):
     plt.close()
     return merged_df
 
+# Main function to run everything
 def main():
+    # If you want x axis normalized
     if args.n:
         everything_norm_everything_graph(args.input_df, args.path)
         only400s_norm_plot(args.input_df, args.path)
         female_cross_norm_plot(args.input_df, args.path)
+    # X axis with original pixels
     else:
         everything_everything_graph(args.input_df, args.path)
         only400s_plot(args.input_df, args.path)

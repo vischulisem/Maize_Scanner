@@ -1,6 +1,7 @@
 #!/usr/local/bin/python3
 
-import argparse
+# This is a rough script on testing some spatial stats using the coordinates from xml files
+
 from pointpats import PointPattern, as_window, G, F, J, K, L, Genv, Fenv, Jenv, Kenv, Lenv
 from pointpats import PoissonPointProcess as csr
 import pointpats.quadrat_statistics as qs
@@ -11,12 +12,10 @@ import xml.etree.ElementTree as ET
 import pandas as pd
 import matplotlib.pyplot as plt
 
-
 # Setting up argparse arguments
 parser = argparse.ArgumentParser(description='Given XML file, width, and steps, returns scatterplot')
 parser.add_argument('-x', '--xml', metavar='', help='Input XML filename or directory.', type=str)
 args = parser.parse_args()
-
 
 # This function checks XML file for types 4-8 and skips if present
 def check_xml_error(input_xml):
@@ -77,7 +76,6 @@ def check_xml_error(input_xml):
 
 # Function that gets X, Y coord for each kernel and labels as fluor or nonfluor
 # Dataframe is outputted with this info
-# Overall ear stats calculated at end to be shown on pval_plots later
 def parse_xml(input_xml, tree, count_7, count_8):
 	# Getting the root of the tree
 	root = tree.getroot()
@@ -141,34 +139,7 @@ def parse_xml(input_xml, tree, count_7, count_8):
 	df['X-Coordinate'] = df['X-Coordinate'].astype(np.int64)
 	df['Y-Coordinate'] = df['Y-Coordinate'].astype(np.int64)
 
-	# Overall ear stats
-	# Counting total number of kernels per ear
-	overall_kernel_total = int(len(df.index))
-	# Calculating expected value for chi squared test
-	overall_expected = overall_kernel_total * 0.5
-
-	# Counting number of fluorescent
-	if any(df.Type == 'Fluorescent'):
-		x = df['Type'].value_counts()
-		overall_fluor_tot = x['Fluorescent']
-	else:
-		overall_fluor_tot = 0
-
-	# Calculating percent transmission for entire ear
-	overall_perc_trans = overall_fluor_tot/overall_kernel_total
-
-	# Counting number nonfluorescent
-	if any(df.Type == 'Non-Fluorescent'):
-		x = df['Type'].value_counts()
-		overall_nonfluor_tot = x['Non-Fluorescent']
-	else:
-		overall_nonfluor_tot = 0
-
-	# Chi squared test for entire ear..stats returned to be used in pval_plot and displayed in txt box
-	chi_stat = stats.chisquare([overall_fluor_tot, overall_nonfluor_tot], [overall_expected, overall_expected])
-	overall_pval = chi_stat[1]
-
-	return df
+	return df, image_name_string
 
 
 def spatial_stat(df, image_name_string):

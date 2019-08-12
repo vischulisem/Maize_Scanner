@@ -4,7 +4,7 @@
 # Creates MODEL plot with everything on it
 # Creates MODEL plot with everything with male and female in 400s
 # Creates MODEL plot with only females in 400s
-# 5 models are layered on top of eachother in each graph and regression lines calculated
+# 5 models are layered on top of each other in each graph and regression lines calculated
 
 import argparse
 import os
@@ -28,7 +28,7 @@ def everything_everything_graph(input_df, path):
     sns.set_style("white")
     # Reading in txt file as pandas df
     data = pd.read_csv(input_df, sep="\t")
-    # Plotting begins
+    # Plotting begins, each model overlaying each other
     fig, ax = plt.subplots()
     sns.regplot(x="window_mean", y="Percent_Transmission", ax=ax, data=data, fit_reg=True, scatter_kws={"color": "darkred", "alpha": 0.006, "s": 20}, line_kws={"color": "black"})
     sns.regplot(x="window_mean", y="Percent_Transmission2", ax=ax, data=data, fit_reg=True,
@@ -40,15 +40,19 @@ def everything_everything_graph(input_df, path):
     sns.regplot(x="window_mean", y="Percent_Transmission5", ax=ax, data=data, fit_reg=True,
                 scatter_kws={"color": "darkred", "alpha": 0.006, "s": 20}, line_kws={"color": "black"})
 
+    # Figure size
     sns.set(rc={'figure.figsize': (11.7, 8.27)})
+    # Y axis boundaries
     plt.ylim(0, 1)
+    # Grid in background
     ax.yaxis.grid(True)
+    # Set y ticks
     ax.set(yticks=[0, 0.25, 0.5, 0.75, 1])
-
+    # Figure titles
     plt.title('Everything Model Plot', fontsize=30, weight='bold', loc='center', verticalalignment='baseline')
     plt.xlabel('Window Position (pixels)', fontsize=18, weight='bold')
     plt.ylabel('Percent Transmission', fontsize=18, weight='bold')
-
+    # Making text bold
     plt.rcParams["font.weight"] = "bold"
     plt.rcParams["axes.labelweight"] = "bold"
     # Saving figure
@@ -144,7 +148,6 @@ def only400s_plot(input_df, path):
 
     return fig
 
-
 # Plots only xml files named ....x4....
 def female_cross_plot(input_df, path):
     print(f'Starting female plot...')
@@ -225,28 +228,32 @@ def everything_norm_everything_graph(input_df, path):
                 scatter_kws={"color": "darkred", "alpha": 0.006, "s": 20}, line_kws={"color": "black"})
     sns.regplot(x="Normalized_Window_Mean", y="Percent_Transmission5", ax=ax, data=data, fit_reg=True,
                 scatter_kws={"color": "darkred", "alpha": 0.006, "s": 20}, line_kws={"color": "black"})
-
+    # Figure size
     sns.set(rc={'figure.figsize': (11.7, 8.27)})
+    # X and Y axis boundaries
     plt.ylim(0, 1)
     plt.xlim(0, 1)
     ax.yaxis.grid(True)
+    # Setting x and y ticks
     ax.set(yticks=[0, 0.25, 0.5, 0.75, 1])
     ax.set(xticks=[0, 0.2, 0.4, 0.6, 0.8, 1])
-
+    # Figure titles
     plt.title('Everything Norm Model Plot', fontsize=30, weight='bold', loc='center', verticalalignment='baseline')
     plt.xlabel('Normalized Window Position (pixels)', fontsize=18, weight='bold')
     plt.ylabel('Percent Transmission', fontsize=18, weight='bold')
-
+    # Making text bold
     plt.rcParams["font.weight"] = "bold"
     plt.rcParams["axes.labelweight"] = "bold"
+    # Making background of graph white
     ax.set_facecolor('white')
+    # Coloring y axis grid lines
     ax.yaxis.grid(color='gainsboro')
-
+    # Drawing a black box around graph
     ax.spines['bottom'].set_color('black')
     ax.spines['top'].set_color('black')
     ax.spines['right'].set_color('black')
     ax.spines['left'].set_color('black')
-
+    # Setting custom x axis ticks to label bottom and top of ear
     fig.canvas.draw()
 
     labels = [item.get_text() for item in ax.get_xticklabels()]
@@ -326,12 +333,12 @@ def only400s_norm_plot(input_df, path):
     plt.rcParams["axes.labelweight"] = "bold"
     ax.set_facecolor('white')
     ax.yaxis.grid(color='gainsboro')
-
+    # Draw black box around plot
     ax.spines['bottom'].set_color('black')
     ax.spines['top'].set_color('black')
     ax.spines['right'].set_color('black')
     ax.spines['left'].set_color('black')
-
+    # Label x axis with bottom and top of ear
     fig.canvas.draw()
 
     labels = [item.get_text() for item in ax.get_xticklabels()]
@@ -374,7 +381,6 @@ def only400s_norm_plot(input_df, path):
 
     return fig
 
-
 # Plots only xml files named ....x4....
 def female_cross_norm_plot(input_df, path):
     print(f'Starting female plot...')
@@ -411,12 +417,12 @@ def female_cross_norm_plot(input_df, path):
     plt.rcParams["axes.labelweight"] = "bold"
     ax.set_facecolor('white')
     ax.yaxis.grid(color='gainsboro')
-
+    # Draw black box around plot
     ax.spines['bottom'].set_color('black')
     ax.spines['top'].set_color('black')
     ax.spines['right'].set_color('black')
     ax.spines['left'].set_color('black')
-
+    # Setting x axis ticks to label bottom and top of ear
     fig.canvas.draw()
 
     labels = [item.get_text() for item in ax.get_xticklabels()]
@@ -462,10 +468,12 @@ def female_cross_norm_plot(input_df, path):
     return fig
 
 def main():
+    # If you want to use normalized x axis
     if args.n:
         everything_norm_everything_graph(args.input_df, args.path)
         only400s_norm_plot(args.input_df, args.path)
         female_cross_norm_plot(args.input_df, args.path)
+   # Not normalized x axis
     else:
         everything_everything_graph(args.input_df, args.path)
         only400s_plot(args.input_df, args.path)
