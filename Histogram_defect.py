@@ -250,11 +250,11 @@ def yay_ttest(d_sub_data, sub_data, dxml_df, xml_df):
 
 # Main function to run everything
 def main():
-    xml_df = nodefect_values(args.table8, args.input_df, args.path)
-    dxml_df = defect_values(args.table8, args.input_df, args.path)
+    xml_df = nodefect_values(args.table8, args.input_allxml_df, args.path)
+    dxml_df = defect_values(args.table8, args.input_allxml_df, args.path)
     sub_data = model_nodefect_values(args.table8, args.model_df, args.path)
     dsub_data = model_defect_values(args.table8, args.model_df, args.path)
-    yay_ttest(xml_df, dxml_df, sub_data, dsub_data)
+    yay_ttest(dsub_data, sub_data, dxml_df, xml_df)
 
 if __name__ == '__main__':
     main()
