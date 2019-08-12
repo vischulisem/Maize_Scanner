@@ -114,7 +114,7 @@ Example Histograms:</br>
 ![XML_400sSlope_Hist](https://user-images.githubusercontent.com/52712211/62904780-846d4b80-bd1c-11e9-97cf-7d857032991b.png)</br>
 
 ### 2. Histogram_defect.py
-From model_meta_df.txt and meta_df.txt, will make histograms for transmission defect or no transmission defect for both normal xml files and model. Requires Table8.tsv as argument as well. Can designate new path for saving plots with -p otherwise current path is default.
+From model_meta_df.txt and meta_df.txt, will make histograms for transmission defect or no transmission defect for both normal xml files and model. Requires Table8.tsv as argument as well. Can designate new path for saving plots with -p otherwise current path is default.</br>
 ![Defect_Slope_Hist](https://user-images.githubusercontent.com/52712211/62905279-994ade80-bd1e-11e9-9281-05bb2b7cbf75.png)</br>
 ![Model_defect_Slope_Hist](https://user-images.githubusercontent.com/52712211/62905280-994ade80-bd1e-11e9-9791-fab8fff46dd9.png)</br>
 ![Model_nodefect_Slope_Hist](https://user-images.githubusercontent.com/52712211/62905282-994ade80-bd1e-11e9-97b1-c8345211bea1.png)</br>
