@@ -70,7 +70,9 @@ pysal https://pysal.org/install</br>
     directory with xml file as plot name. </br>
       This script accepts single xml file or directory of xml files as arguments. Outputs scatterplots. </br>
     -p will allow you to select path to save files. Default is current path.</br>
-![X401x492-2m1](https://user-images.githubusercontent.com/52712211/62904779-846d4b80-bd1c-11e9-847e-9a63a20da60b.png)
+![X401x492-2m1](https://user-images.githubusercontent.com/52712211/62904779-846d4b80-bd1c-11e9-847e-9a63a20da60b.png)</br>
+### 4. Male_plot_folder.py
+This script allows you to 'drag and drop' desired xml files into a folder, process all files, and output a male family plot based on everything in the folder. Input arguments are xml file or directory of xml files. Ouptut is one male family plot. It is really important that you designate the path where you want it saved, as all graphs have the same title. Graphs can be distingushed apart by the key but that may be annoying. </br>
 ## Modelling Analysis
 
   This group of scripts must be run in this order. Scripts are similar to those above however this generates 5 different models for
