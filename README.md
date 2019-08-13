@@ -29,6 +29,8 @@ pysal https://pysal.org/install</br>
     less than 50 kernels per ear are skipped.</br>
     -n will normalize the X coordinates "window_mean" for all graphs</br>
     -p --path designates the path to save files. Default is current path.</br>
+    -a will adjust chi square p values according to Benjamini–Hochberg procedure with statsmodels. This takes into account multiple comparisons, however, it is not the best choice for a test. This should be changed in the future. Statsmodels has a variety of other tests that could easily be changed. You can read more here: </br>
+    https://www.statsmodels.org/stable/generated/statsmodels.stats.multitest.multipletests.html </br>
     Outputs: New directory 'Transmission_plots' containing graphs corresponding to each xml file with positional
     percent transmission for each window, regression, and ear statistics. Also outputs 'meta_df.txt' which contains overall 
     ear stats and p-values. Also outputs 'everything_df.txt' which contains all window calculations and p values for each window for
@@ -68,7 +70,9 @@ pysal https://pysal.org/install</br>
     directory with xml file as plot name. </br>
       This script accepts single xml file or directory of xml files as arguments. Outputs scatterplots. </br>
     -p will allow you to select path to save files. Default is current path.</br>
-![X401x492-2m1](https://user-images.githubusercontent.com/52712211/62904779-846d4b80-bd1c-11e9-847e-9a63a20da60b.png)
+![X401x492-2m1](https://user-images.githubusercontent.com/52712211/62904779-846d4b80-bd1c-11e9-847e-9a63a20da60b.png)</br>
+### 4. Male_plot_folder.py
+This script allows you to 'drag and drop' desired xml files into a folder, process all files, and output a male family plot based on everything in the folder. Input arguments are xml file or directory of xml files. Ouptut is one male family plot. It is really important that you designate the path where you want it saved, as all graphs have the same title. Graphs can be distingushed apart by the key but that may be annoying. </br>
 ## Modelling Analysis
 
   This group of scripts must be run in this order. Scripts are similar to those above however this generates 5 different models for
@@ -86,6 +90,7 @@ pysal https://pysal.org/install</br>
     less than 50 kernels per ear are skipped.</br>
     -n will normalize the X coordinates "window_mean" for all graphs</br>
     -p --path designates the path to save files. Default is current path.</br>
+    -a will adjust for multiple comparisons of the p-values from chi square test using Benjamini–Hochberg procedure. </br>
     Outputs new directory 'Model_Transmission_plots/' with each model graph labeled with file name. Also outputs 2 text files to
     become dataframes in later scripts. 'meta_model_df.txt' contains overall ear statistics for each model. 'everything_model_df.txt'
     contains window calculations and chi square statistics for each ear. Again txt files are tab delimited. </br>
