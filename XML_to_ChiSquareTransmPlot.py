@@ -407,8 +407,8 @@ def pval_plot(final_df, xml, overall_kernel_total, overall_perc_trans, overall_p
 	plt.figure(figsize=(11.7, 8.27))
 
 	ax.set_title(xml[:-4]+' Plot', fontsize=30, fontweight='bold')
-	ax.set_xlabel('Normalized Window Position (pixels)', fontsize=20, fontweight='bold')
-	ax.set_ylabel('% GFP', fontsize=20, fontweight='bold')
+	ax.set_xlabel('Normalized Window Position (pixels)', fontsize=22, fontweight='bold')
+	ax.set_ylabel('% GFP', fontsize=22, fontweight='bold')
 
 	ax.set_facecolor('white')
 	ax.yaxis.grid(color='grey')
@@ -422,12 +422,17 @@ def pval_plot(final_df, xml, overall_kernel_total, overall_perc_trans, overall_p
 		# Key to label line colors
 		red_patch = mpatches.Patch(color='red', label='> p adjusted = 0.05')
 		blue_patch = mpatches.Patch(color='blue', label='< p adjusted = 0.05')
-		ax.legend(handles=[red_patch, blue_patch], loc='center left', bbox_to_anchor=(1, 0.5))
+		leg = ax.legend(handles=[red_patch, blue_patch], loc='center left', bbox_to_anchor=(1, 0.5), prop={'size': 24})
 	else:
 		# Key to label line colors
 		red_patch = mpatches.Patch(color='red', label='> p = 0.05')
 		blue_patch = mpatches.Patch(color='blue', label='< p = 0.05')
-		ax.legend(handles=[red_patch, blue_patch], loc='center left', bbox_to_anchor=(1, 0.5))
+		leg = ax.legend(handles=[red_patch, blue_patch], loc='center left', bbox_to_anchor=(1, 0.5), prop={'size': 24})
+
+	for tick in ax.xaxis.get_major_ticks():
+		tick.label.set_fontsize(20)
+	for tick in ax.yaxis.get_major_ticks():
+		tick.label.set_fontsize(20)
 
 	# Creating a text box with overall stats for each graph
 	num_weird_trans = len(final_df[final_df['P-Value'] < 0.05])
@@ -576,13 +581,17 @@ def pval_notnorm_plot(final_df, xml, overall_kernel_total, overall_perc_trans, o
 		# Key to label line colors
 		red_patch = mpatches.Patch(color='red', label='> p adjusted = 0.05')
 		blue_patch = mpatches.Patch(color='blue', label='< p adjusted = 0.05')
-		ax.legend(handles=[red_patch, blue_patch], loc='center left', bbox_to_anchor=(1, 0.5))
+		ax.legend(handles=[red_patch, blue_patch], loc='center left', bbox_to_anchor=(1, 0.5), prop={'size': 24})
 	else:
 		# Key to label line colors
 		red_patch = mpatches.Patch(color='red', label='> p = 0.05')
 		blue_patch = mpatches.Patch(color='blue', label='< p = 0.05')
-		ax.legend(handles=[red_patch, blue_patch], loc='center left', bbox_to_anchor=(1, 0.5))
+		ax.legend(handles=[red_patch, blue_patch], loc='center left', bbox_to_anchor=(1, 0.5), prop={'size': 24})
 
+	for tick in ax.xaxis.get_major_ticks():
+		tick.label.set_fontsize(20)
+	for tick in ax.yaxis.get_major_ticks():
+		tick.label.set_fontsize(20)
 	# Creating a text box with overall stats for each graph
 	num_weird_trans = len(final_df[final_df['Comparison'] == '< p = 0.05'])
 	num_tkern = int(len(final_df))

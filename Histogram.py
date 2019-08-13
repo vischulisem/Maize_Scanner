@@ -143,7 +143,7 @@ def make_xml_r_hist(input_df, path):
     plt.xlabel('R-Squared', fontsize=18, fontweight='bold')
     plt.ylabel('Frequency', fontsize=18, fontweight='bold')
 
-    plt.title('Normalized XML R-Squared Values', fontsize=25, fontweight='bold')
+    plt.title('Normalized Actual R-Squared Values', fontsize=25, fontweight='bold')
 
     # Saving figure
     s_sav = ax.get_figure()
@@ -174,7 +174,7 @@ def make_xml_slope_hist(input_df, path):
     # Removing Y ticks from the second axis
     second_ax.set_yticks([])
 
-    plt.title('Normalized XML Slope Values', fontsize=25, fontweight='bold')
+    plt.title('Normalized Actual Slope Values', fontsize=25, fontweight='bold')
 
     s_sav = second_ax.get_figure()
     script_dir = path
@@ -195,7 +195,7 @@ def make_xml_pval_hist(input_df, path):
     plt.xlabel('P-Value', fontsize=18, fontweight='bold')
     plt.ylabel('Log Frequency', fontsize=18, fontweight='bold')
 
-    plt.title('Normalized XML P-Values', fontsize=25, fontweight='bold')
+    plt.title('Normalized Actual P-Values', fontsize=25, fontweight='bold')
 
     # Saving figure
     s_sav = ax.get_figure()
@@ -341,9 +341,9 @@ def make4_xml_r_hist(data, path, argss):
     plt.ylabel('Frequency', fontsize=18, fontweight='bold')
 
     if argss:
-        plt.title('Normalized 492s XML R-Squared Values', fontsize=25, fontweight='bold')
+        plt.title('Normalized 492s Actual R-Squared Values', fontsize=25, fontweight='bold')
     else:
-        plt.title('Normalized 400s XML R-Squared Values', fontsize=25, fontweight='bold')
+        plt.title('Normalized 400s Actual R-Squared Values', fontsize=25, fontweight='bold')
 
     s_sav = ax.get_figure()
     script_dir = path
@@ -379,9 +379,9 @@ def make4_xml_slope_hist(data, path, argss):
     second_ax.set_yticks([])
 
     if argss:
-        plt.title('Normalized 492s XML Slope Values', fontsize=25, fontweight='bold')
+        plt.title('Normalized 492s Actual Slope Values', fontsize=25, fontweight='bold')
     else:
-        plt.title('Normalized 400s XML Slope Values', fontsize=25, fontweight='bold')
+        plt.title('Normalized 400s Actual Slope Values', fontsize=25, fontweight='bold')
 
     s_sav = second_ax.get_figure()
     script_dir = path
@@ -406,9 +406,9 @@ def make4_xml_pval_hist(data, path, argss):
     plt.ylabel('Log Frequency', fontsize=18, fontweight='bold')
 
     if argss:
-        plt.title('Normalized 492s XML P-Values', fontsize=25, fontweight='bold')
+        plt.title('Normalized 492s Actual P-Values', fontsize=25, fontweight='bold')
     else:
-        plt.title('Normalized 400s XML P-Values', fontsize=25, fontweight='bold')
+        plt.title('Normalized 400s Actual P-Values', fontsize=25, fontweight='bold')
     s_sav = ax.get_figure()
     script_dir = path
     results_dir = os.path.join(script_dir, 'Output_Histogram/')

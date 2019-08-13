@@ -652,10 +652,6 @@ def male_fam_plot(input_df, path):
     slope, intercept, r_value, p_value, std_err = stats.linregress(reg_x, reg_y)
     r2 = r_value ** 2
 
-    # Plotting regression line
-    plt.plot(reg_x, intercept + slope * reg_x, 'r', label='fitted line', color='red', linewidth=3,
-                     dashes=[5, 3])
-
     # Creating empty df so that mean rsquared for each line can be displayed
     stat_df = pd.DataFrame(columns='Slope Intercept RSquared P-Value'.split())
     # Iterating through each file name and plotting regression line
@@ -671,7 +667,8 @@ def male_fam_plot(input_df, path):
         temp_stat_df = pd.DataFrame(data=this_stat, columns='Slope Intercept RSquared P-Value'.split())
         stat_df = stat_df.append(temp_stat_df)
         stat_df = stat_df.reset_index(drop=True)
-
+    # Plotting regression line
+    plt.plot(reg_x, intercept + slope * reg_x, 'r', label='fitted line', color='red', linewidth=4)
     # Calculating mean values for each stat and rounding to 4 decimal places
     average_slope = round(stat_df['Slope'].mean(), 4)
     average_intercept = round(stat_df['Intercept'].mean(), 4)

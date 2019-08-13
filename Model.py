@@ -557,13 +557,17 @@ def pval_plot(final_df, xml, path, argsa):
 		# Creating legend for colored p value line
 		red_patch = mpatches.Patch(color='red', label='> p adjusted = 0.05')
 		blue_patch = mpatches.Patch(color='blue', label='< p adjusted = 0.05')
-		plt.legend(handles=[red_patch, blue_patch], loc='center left', bbox_to_anchor=(1, 0.5))
+		plt.legend(handles=[red_patch, blue_patch], loc='center left', bbox_to_anchor=(1, 0.5), prop={'size': 24})
 	else:
 		# Creating legend for colored p value line
 		red_patch = mpatches.Patch(color='red', label='> p = 0.05')
 		blue_patch = mpatches.Patch(color='blue', label='< p = 0.05')
-		plt.legend(handles=[red_patch, blue_patch], loc='center left', bbox_to_anchor=(1, 0.5))
+		plt.legend(handles=[red_patch, blue_patch], loc='center left', bbox_to_anchor=(1, 0.5), prop={'size': 24})
 
+	for tick in ax.xaxis.get_major_ticks():
+		tick.label.set_fontsize(20)
+	for tick in ax.yaxis.get_major_ticks():
+		tick.label.set_fontsize(20)
 	pv_plot = lc.get_figure()
 
 	# Create directory to save plots
@@ -739,12 +743,12 @@ def pval_norm_plot(final_df, xml, path, argsa):
 		# Creating legend for colored p value line
 		red_patch = mpatches.Patch(color='red', label='> p adjusted = 0.05')
 		blue_patch = mpatches.Patch(color='blue', label='< p adjusted = 0.05')
-		ax.legend(handles=[red_patch, blue_patch], loc='center left', bbox_to_anchor=(1, 0.5))
+		ax.legend(handles=[red_patch, blue_patch], loc='center left', bbox_to_anchor=(1, 0.5), prop={'size': 24})
 	else:
 		# Creating legend for colored p value line
 		red_patch = mpatches.Patch(color='red', label='> p = 0.05')
 		blue_patch = mpatches.Patch(color='blue', label='< p = 0.05')
-		ax.legend(handles=[red_patch, blue_patch], loc='center left', bbox_to_anchor=(1, 0.5))
+		ax.legend(handles=[red_patch, blue_patch], loc='center left', bbox_to_anchor=(1, 0.5), prop={'size': 24})
 
 	fig.canvas.draw()
 
@@ -757,6 +761,11 @@ def pval_norm_plot(final_df, xml, path, argsa):
 	labels[5] = 0.8
 
 	ax.set_xticklabels(labels)
+
+	for tick in ax.xaxis.get_major_ticks():
+		tick.label.set_fontsize(20)
+	for tick in ax.yaxis.get_major_ticks():
+		tick.label.set_fontsize(20)
 	pv_plot = lc.get_figure()
 
 	# Create directory to save plots
