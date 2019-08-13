@@ -33,7 +33,7 @@ from statsmodels.stats.multitest import multipletests
 
 # Setting up argparse arguments
 parser = argparse.ArgumentParser(description='Given XML file, width, and steps, returns scatterplot')
-parser.add_argument('-x', '--xml', metavar='', help='Input XML filename.', type=str)
+parser.add_argument('-x', '--xml', metavar='', help='Input XML filename or directory.', type=str)
 parser.add_argument('-w', '--width', metavar='', help='Width in pixels for the length of the window.', default=400, type=int)
 parser.add_argument('-s', '--step_size', metavar='', help='Steps in pixels for window movement.', default=2, type=int)
 parser.add_argument('-n', action='store_true', help='Will normalize x axis of transmission plots.')

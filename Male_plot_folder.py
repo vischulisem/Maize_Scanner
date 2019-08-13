@@ -15,6 +15,7 @@
 # Meta dataframe outputted and saved as .txt containing overall ear stats
 # Everything dataframe outputted and saved as .txt containing window calculations including percent transmission
 # per window and P-values for each window
+# Next Male family plots are created based on the everything_df from everything in the input folder.
 
 import sys
 import os
