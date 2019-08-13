@@ -29,6 +29,8 @@ pysal https://pysal.org/install</br>
     less than 50 kernels per ear are skipped.</br>
     -n will normalize the X coordinates "window_mean" for all graphs</br>
     -p --path designates the path to save files. Default is current path.</br>
+    -a will adjust chi square p values according to Benjamini–Hochberg procedure with statsmodels. This takes into account multiple comparisons, however, it is not the best choice for a test. This should be changed in the future. Statsmodels has a variety of other tests that could easily be changed. You can read more here: </br>
+    https://www.statsmodels.org/stable/generated/statsmodels.stats.multitest.multipletests.html </br>
     Outputs: New directory 'Transmission_plots' containing graphs corresponding to each xml file with positional
     percent transmission for each window, regression, and ear statistics. Also outputs 'meta_df.txt' which contains overall 
     ear stats and p-values. Also outputs 'everything_df.txt' which contains all window calculations and p values for each window for
@@ -86,6 +88,7 @@ pysal https://pysal.org/install</br>
     less than 50 kernels per ear are skipped.</br>
     -n will normalize the X coordinates "window_mean" for all graphs</br>
     -p --path designates the path to save files. Default is current path.</br>
+    -a will adjust for multiple comparisons of the p-values from chi square test using Benjamini–Hochberg procedure. </br>
     Outputs new directory 'Model_Transmission_plots/' with each model graph labeled with file name. Also outputs 2 text files to
     become dataframes in later scripts. 'meta_model_df.txt' contains overall ear statistics for each model. 'everything_model_df.txt'
     contains window calculations and chi square statistics for each ear. Again txt files are tab delimited. </br>
