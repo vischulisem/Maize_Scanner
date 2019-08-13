@@ -667,7 +667,8 @@ def male_fam_plot(input_df, path):
         temp_stat_df = pd.DataFrame(data=this_stat, columns='Slope Intercept RSquared P-Value'.split())
         stat_df = stat_df.append(temp_stat_df)
         stat_df = stat_df.reset_index(drop=True)
-    # Plotting regression line
+    # Plotting regression line for all files in fam together
+    plt.plot(reg_x, intercept + slope * reg_x, 'r', label='fitted line', color='white', linewidth=6)
     plt.plot(reg_x, intercept + slope * reg_x, 'r', label='fitted line', color='red', linewidth=4)
     # Calculating mean values for each stat and rounding to 4 decimal places
     average_slope = round(stat_df['Slope'].mean(), 4)
