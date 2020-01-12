@@ -1,6 +1,9 @@
 # Overview of Maize Scanner :corn:
 This repository is a group of scripts and data to analyze an ear of maize. Each script can be cloned and run in the terminal and uses argparse as argument parser.</br>
-Scripts and the order they should be run are outlined below.
+Scripts and the order they should be run are outlined below. </br>
+</br>
+
+Maize ear scanner video projections created with this method: https://github.com/fowler-lab-osu/flatten_all_videos_in_pwd
 
 ## Prerequisites
 numpy https://docs.scipy.org/doc/numpy/user/install.html </br>
