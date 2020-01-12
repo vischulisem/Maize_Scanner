@@ -140,4 +140,4 @@ Beginning scripts to analyze the spatial distribution of kernels across the ear.
 Elyse Vischulis
 
 ## Contributors
-Matthew Warman, Oregon State University
+Cedar Warman, Oregon State University
